@@ -71,8 +71,8 @@ var defaultJobs = {
             },
             perks: ['Constant Learner']
           },
-          nobleman: {
-            name: "Nobleman",
+          grifter: {
+            name: "Grifter",
             description: "",
             aptitudes: {
               labour: 0.5,
@@ -87,12 +87,12 @@ var defaultJobs = {
               divinity: 2,
             },
             unlocked: false,
-            hint: "While magic is powerful, it is fleeting and scarce. A knowledge of nature and it's effects are always in need by the people.",
-            unlock: "Complete 10 quests in all of the starting zones in the City area.",
+            hint: "The griften weasels their was into every whispered conversation, side job and plot in the city. There is nowhere he hasn't been.",
+            unlock: "Complete 10 quests in all of the unlocked zones in the City area.",
             check: function(self) {
               var state = true;
               Object.keys(self.stats.zones).map(function(zonename, i) {
-                  if (self.stats.zones[zonename].area == "City") {
+                  if (self.stats.zones[zonename].area == "City" && self.zones[zonename].unlocked) {
                     if (self.stats.zones[zonename].completions < 10) {
                       state = false;
                     }
@@ -131,7 +131,7 @@ var defaultJobs = {
           },
           druid: {
             name: "Druid",
-            description: "Druids have their repuation for defending nature, but in truth they view all beings as equals. They ensure no plant or animal takes more than their share of nature's bountry, including mankind.",
+            description: "Druids have their reputation for defending nature, but in truth they view all beings as equals. They ensure no plant or animal takes more than their share of nature's bountry, including mankind.",
             aptitudes: {
               labour: 1.5,
               combat: 2,
@@ -167,7 +167,6 @@ var defaultJobs = {
           goblin: {
             name: "Goblin",
             description: "A feral race warped by ancient magic and centuries of inbreeding, Goblins lead poor, short lives that often end at the hands of questing adventurers. Every once in a while, though, a goblin lives long enough to fulfil their true potential...",
-            unlocked: true,
             aptitudes: {
               labour: 0.5,
               combat: 0.5,
@@ -180,7 +179,19 @@ var defaultJobs = {
               guile: 0.5,
               divinity: 0.5,
             },
-            perks: ['Despite a cursed life...', 'Some survive the odds...']
+            perks: ['Despite a cursed life...', 'Some survive the odds...'],
+            unlocked: false,
+            check: function(self) {
+              var total = 0;
+              Object.keys(self.zones).map(function(zonename, i) {
+                if (self.zones.type == 'dungeon' && zonename in self.stats.zones) {
+                  total += self.stats.zones[zonename].completions;
+                }
+              });
+              return (total > 300);
+            },
+            hint: "Goblins avoid  humans at all costs, gravitating towards dark caves and  abandoned castles in an effort to scrape together an existence. Unfortunately these locations also draw adventurers and do-gooders looking for loot and amusement, justifying their genocide in the name of 'clearing dungeons'.",
+            unlock: "Complete over 300 quests in dungeon zones.",
           },
           adventurer: {
             name: "Adventurer",

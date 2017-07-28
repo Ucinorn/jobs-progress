@@ -36,11 +36,6 @@
         <div class="col-4">
           <button @click="save()">Save</button>
           <button @click="load()">Load</button>
-          <button @click="reset()">Reset</button>
-          <button @click="player.level++">lv+</button>
-          <button @click="player.level--">lv-</button>
-          <button @click="completeQuest(player.zone)">QC</button>
-          <button @click="logData()">Log</button>
         </div>
         <div class="col-2"><strong>JOB LEGACY</strong></div>
       </div>
@@ -97,12 +92,12 @@
         <!-- main views -->
         <div class="col">
           <div class="row" v-if="Object.keys(player.currentZone ).length != 0">
-            <div class="col-5 row">
-              <div class="col-8">
+            <div class="col-5 row no-gutters">
+              <div class="col-7">
                 <h6><span style="padding: 5px" v-html="generateIcon(player.currentZone.type)"></span>&nbsp;{{player.zone}}</h6>
               </div>
-              <div class="col-4">
-                <button @click="boost()" v-bind:disabled="boostcount > 0">Boost <span v-if="'Boosted' in multis">{{multis.Boosted.val}}</span></button>
+              <div class="col-5">
+                <button style="float: right; width: 90px;" @click="boostUp()" v-bind:disabled="boost.count > 0">Boost <span v-if="'Boosted' in multis">{{Number((multis.Boosted.val).toFixed(2))}}</span></button>
                 <!--<button v-if="!player.currentZone.finished" v-bind:disabled="player.currentZone.finished" @click="quest(player.zone)">Quest</button>
                 <button  v-if="player.currentZone.finished" v-bind:disabled="completingcount > 0" @click="completeQuest(player.zone)">Complete</button>
 -->
@@ -122,10 +117,12 @@
                 <span style="width:20px; display: inline-block" v-html="generateIcon(name)"></span>{{name}}
                </div>
                <div class="col-4 tool">
-                {{player.currentZone.rates[name] - skill}} per tick ({{player.currentZone.rates[name]}} - {{skill}})
+                {{Number((player.currentZone.rates[name] - skill).toFixed(2))}} per tick
                  <div class="tooltiptext">
                 <div v-for="(multi, multiname, index) in multis" v-if="multi.type == 'progress' && multi.skill == name"> {{multiname}}: {{Math.round(multi.val * 100)}}%</div>
                 <div v-for="(multi, multiname, index) in multis" v-if="multi.type == 'progress' && multi.skill == 'all'"> {{multiname}}: {{Math.round(multi.val * 100)}}%</div>
+                   <hr>
+                    = {{player.currentZone.rates[name]}} - {{skill}}
                  </div>
                </div>
                <div class="col-4" style="text-align: right;">EXP Multi: {{Math.round(player.currentZone.difficulty[name] * 100)}}%</div>
@@ -326,7 +323,13 @@
         <a class="closeButton" @click="message.visible = false">X</a>
       </div>
     </div>
-    <div id="debug" style="font-size: 10px;">
+    <div id="debug" style="font-size: 10px;" v-if="debug">
+      <hr>
+      <button @click="reset()">Reset</button>
+      <button @click="player.level++">LVL+</button>
+      <button @click="player.level--">LVL-</button>
+      <button @click="completeQuest()">COMPLETE</button>
+      <button @click="message('testing', 'general');">Test message</button>
       <hr>messages: {{messages}}
       <hr>multis: {{multis}}
       <hr>displayMultis: {{displayMultis}}

@@ -2,15 +2,18 @@
       el: '#app',
       name: 'game',
       data: {
-        version: 0.1,
+        debug: true,
         startup: false,
         view: 'world',
         chosenJob: "",
         questing: false,
         completingcount: 0,
-        boostamount: 1,
-        boostcount: 0,
-        boostdecay: 0.005,
+        boost: {
+          amount: 1,
+          count: 0,
+          decay: 0.005,
+          max: 5,
+        },
         interval: {},
         loopspeed: 250,
         player: getDefaultPlayer(),
@@ -156,6 +159,8 @@
           if (this.startup) {return;}
           if (typeof type == 'undefined') { type = ""; }
           var time = new Date().getTime();
+          console.log(type + ' message:' + text);
+          console.log(this.messages);
           this.messages[time] = {text, type, visible: true}
           var self = this;
           if (typeof permanent != 'undefined') {return}
@@ -333,14 +338,18 @@
               //console.log('max is: ' + total);
            });
         },
-        boost: function() {
+        boostUp: function() {
           if ('Boosted' in this.multis) {
-             var current =  this.multis.Boosted.val;
-             this.multis.Boosted = {type: 'progress', skill: 'all', val: (current + this.boostamount)};
+             var next =  this.multis.Boosted.val + this.boost.amount;
+             if (next <= this.boost.max) {
+               this.multis.Boosted = {type: 'progress', skill: 'all', val: next};
+             } else {
+               this.multis.Boosted = {type: 'progress', skill: 'all', val: 5};
+             }
           } else {
-              this.multis.Boosted = {type: 'progress', skill: 'all', val: this.boostamount};
+              this.multis.Boosted = {type: 'progress', skill: 'all', val: this.boost.amount};
           }
-          this.boostcount = 5;
+          this.boost.count = 5;
         },
         quest: function(zone) {
           // check if the quest is finished. if it is, use the progress bar to track back and complete the quest
@@ -368,13 +377,13 @@
                // if at this point the amount is not a number, make it so
                if (Number.isNaN(amount)) {amount = Number(0);}
                // set the rate per zone for display
-               self.player.currentZone.rates[skill] = amount;
+               self.player.currentZone.rates[skill] = Number((amount).toFixed(2));
                // minus the skill value for the zone. This can result in negative progress
                amount = Math.ceil(amount) - self.player.currentZone.skills[skill];
                total += amount;
           });
           // set the rate;
-          self.player.currentZone.rates.total = total;
+          self.player.currentZone.rates.total = Number((total).toFixed(2));
           // progress must always be at least 1. if not, just return and nothing happens.
           if (total < 1) {total = 0;}
           if ( (this.player.currentZone.current + total) >= this.player.currentZone.max ) {
@@ -498,7 +507,7 @@
           if ('Boosted' in this.multis) {
             var current = this.multis.Boosted.val;
             if (current > 0.1) {
-              this.multis.Boosted = {type: 'progress', skill: 'all', val: Number((current * (1 - this.boostdecay)).toFixed(2))};
+              this.multis.Boosted = {type: 'progress', skill: 'all', val: Number((current * (1 - this.boost.decay)).toFixed(3))};
             } else {
               delete this.multis.Boosted;
             }
@@ -510,8 +519,8 @@
           if (this.completingcount > 0) {
             this.completingcount--;
           }
-          if (this.boostcount > 0) {
-            this.boostcount--;
+          if (this.boost.count > 0) {
+            this.boost.count--;
           }
           this.checkPerks();
         },

@@ -9,6 +9,16 @@ var defaultUpgrades = {
       self.setPerk('Ancestral Spirit');
     }
   },
+  'Wanderlust': {
+    description: "Enable the option to move on to other areas once the average difficulty is less than 50%",
+    type: "perk",
+    persistent: true,
+    cost: 10,
+    unlocked: true,
+    effect: function(self) {
+     
+    }
+  },
   'Deal with the Devil': {
     description: "Add a level 50 Demon in your Hall of Heroes, immediately gaining prestige currency. But be warned... the power of the seven hells comes at a price.",
     type: "quest",
