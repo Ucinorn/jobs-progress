@@ -1,0 +1,98 @@
+body, html {
+  height: 100%; 
+  width: 100%;
+  font-size: 85%;
+}
+#app {
+  width: 100%;
+  padding: 10px;
+}
+#sidebar {
+  max-width: 250px;
+  min-width: 250px;
+}
+#currentZone {
+  border: 1px solid grey;
+  padding: 5px;
+}
+.row + .row {
+  margin-top: 0.2em;
+}
+.zoneBox {
+  margin-bottom: 5px;
+  padding: 5px;
+  border: 2px solid grey;
+}
+.zoneBox.locked {
+  background: #efefef;
+  border: 1px solid #efefef;
+}
+.zoneBox:hover {
+  opacity: 0.8;
+  cursor: pointer;
+}
+.zone {
+  border: 2px solid grey;
+  padding: 10px;
+  background: #f7f7f7;
+  margin-bottom: 10px;
+}
+.zone.active {
+  background: #d8d8d8;
+}
+.zone:not(.active):hover {
+  cursor: pointer;
+  opacity: 0.85;
+  background: #d8d8d8;
+}
+.square {
+  padding: 5px;
+  text-align: center;
+}
+.skillSquare {
+  padding: 3px; 
+  min-width: 30px;
+  display: inline-block;
+}
+.skillSquare i {
+  width: 100%;
+  text-align: center;
+  padding: 5px;
+  background: white;
+  text-shadow: 0px 1px 3px white;
+}
+.icon {
+  display: inline-block;
+  min-width: 18px;
+  margin-right: 3px;
+}
+.progress-bar {
+  transition: all 0.5s;
+}
+.tool {
+  position: relative;
+}
+.tool .tooltiptext {
+    visibility: hidden;
+    width: 200px;
+    background: white;
+    border: 1px solid black;
+    padding: 5px;
+    position: fixed;
+    z-index: 9999;
+    bottom: 10px;
+    right: 10px; 
+}
+.tool:hover {
+  opacity: 0.9;
+  outline: 1px solid #e2e2e2;
+}
+.tool:hover .tooltiptext {
+    visibility: visible;
+}
+#messages {
+  position: fixed;
+  right: 10px;
+  bottom: 10px;
+  width: 200px;
+}
