@@ -10,10 +10,10 @@ var defaultPerks = {
      },
    },
    'Chosen One': {
-     description: "You are destined for greatness. All aptitudes are increased by 100% until you hit level 5.",
+     description: "You are destined for greatness. All aptitudes are increased by 100% while adventuring in the starting area.",
      cost: 10,
      check: function(self) {
-        if (self.player.level < 5) {
+        if (self.player.currentZone.area == 'Village') {
           self.multis['Chosen One'] = {type: 'apt', skill: 'all', val: 1};
         } else {
           delete self.multis['Chosen One'];
@@ -26,11 +26,48 @@ var defaultPerks = {
      check: function(self) {
         var lowest = 'combat';
         Object.keys(self.player.skills).map(function(skill, i) {
-          if (self.player.skills[skill].level < self.player.skills[lowest].level) {
+          if (self.player.skills[skill].level > 0 && self.player.skills[skill].level < self.player.skills[lowest].level) {
             lowest = skill;
           }  
         });
         self.multis['Constant Learner'] = {type: 'apt', skill: lowest, val: 2};
+     }
+   },
+   'Masochist': {
+     description: "Completing quests in zones with skill levels higher than your character's grants even more EXP.",
+     cost: 5,
+     check: function(self) {
+        var state = Object.keys(self.player.currentZone.skills).some(function(skill, i) {
+          return (self.player.currentZone.skills[skill] < self.player.skills[skill]);
+        });
+        if (state) {
+          self.multis.Masochistic = {type: 'exp', skill: 'all', val: 1};
+        } else {
+          delete self.multis.Masochistic;
+        }
+     }
+   },
+   'Specialist': {
+     description: "Grants 50% more progress if the current zone has only one skill type.",
+     cost: 5,
+     check: function(self) {
+        var keys = Object.keys(self.currentZone.skills);
+        if (keys.length == 1) {
+          self.multis.Specialist = {type: 'progress', skill: keys[0], val: 0.5};
+        } else {
+          delete self.multis.Specialist;
+        }
+     }
+   },
+   'Jack of All Trades': {
+     description: "If the current zone has more than 2 skill types, increase EXP gain for all skills by 50% ",
+     cost: 5,
+     check: function(self) {
+        if (Object.keys(self.currentZone.skills).length > 2) {
+          self.multis.Specialist = {type: 'exp', skill: 'all', val: 0.5};
+        } else {
+          delete self.multis.Specialist;
+        }
      }
    },
    'Salt of the Earth': {
@@ -268,7 +305,7 @@ var defaultPerks = {
      }
    },
    'Infernal Blood': {
-     description: "You have exchanged your soul for the power of demon blood, granting terrifying powers. All quest completions contribute exp towards your combat, black magic and guile skills.",
+     description: "You have exchanged your soul for the power in demon blood, granting terrifying powers. All quest completions contribute exp towards your combat, black magic and guile skills.",
      onQuestComplete: function(self, zone) {
         ['combat', 'blackMagic', 'guile'].forEach(function(key) {
            self.increaseXP(key, Math.ceil(1.5  * (self.player.skills[key].level + 1)));
@@ -283,11 +320,11 @@ var defaultPerks = {
      }
    },
   'Latent Power': {
-     description: "Your Black Magic aptitude increases by 0.05% for every player level.",
+     description: "You are learning to bring forth and control the formidable magical power within as you grow in power. Multiply progress in Black Magic by 0.05% for every player level.",
      cost: 10,
      check: function(self) {
         var value = Number((self.player.level * 0.05).toFixed(2));
-        self.multis['Latent Power'] = {type: 'apt', skill: 'blackMagic', val: value};
+        self.multis['Latent Power'] = {type: 'progress', skill: 'blackMagic', val: value};
      }
    },
    'Bear Strength': {

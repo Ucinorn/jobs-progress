@@ -21,9 +21,8 @@ var defaultZones = {
     type: 'wilderness',
     unlocked: true,
     skills: {
-      'combat': 1,
-      'archery': 3,
-      'scouting': 2,
+      'combat': 3,
+      'scouting': 1,
     }
   },
   'Town Square': {
@@ -31,8 +30,17 @@ var defaultZones = {
     type: 'urban',
     unlocked: true,
     skills: {
-      'diplomacy': 3,
+      'diplomacy': 1,
       'guile': 2,
+    }
+  },
+  'Small Shrine': {
+    area: 'Village',
+    type: 'urban',
+    unlocked: true,
+    skills: {
+      'divinity': 1,
+      'labour': 5,
     }
   },
   'Druid Grove': {
@@ -46,7 +54,7 @@ var defaultZones = {
     skills: {
       'whiteMagic': 3,
       'herbalism': 3,
-      'diplomacy': 1,
+      'diplomacy': 3,
     }
   },
   'Lightning Rock': {
@@ -64,7 +72,8 @@ var defaultZones = {
     },
     skills: {
       'blackMagic': 5,
-      'combat': 1,
+      'archery': 4,
+      'guile': 3,
     }
   },
   'Main Road': {
@@ -82,7 +91,7 @@ var defaultZones = {
     unlocked: true,
     skills: {
       'scouting': 5,
-      'archery': 10,
+      'archery': 7,
     }
   },
   'Abandoned Caves': {
@@ -90,8 +99,8 @@ var defaultZones = {
     type: 'dungeon',
     unlocked: true,
     skills: {
-      'combat': 10,
-      'blackMagic': 10,
+      'combat': 5,
+      'herbalism': 10,
     }
   },
   'Ancient Ruins': {
@@ -100,15 +109,15 @@ var defaultZones = {
     unlocked: true,
     skills: {
       'whiteMagic': 10,
-      'herbalism': 5,
-      'combat': 15,
+      'blackMagic': 5,
+      'combat': 10,
     }
   },
   'Barbarian Camp': {
     area: 'Great Plains',
     type: 'urban',
     unlocked: false,
-    hint: 'The barbarian horde roams ceaselessly across the plains, but are not hard to find; trespass in their lands and they find you.',
+    hint: 'The barbarian horde roams ceaselessly across the plains, but are difficult to find; trespass in their lands and eventually find you.',
     unlock: 'Complete Over 100 quests in the Great Plains Area',
     check: function(self) {
       return (self.stats.areas['Great Plains'].completions > 100);
@@ -141,7 +150,7 @@ var defaultZones = {
     type: 'urban',
     unlocked: true,
     skills: {
-      'combat': 12,
+      'combat': 10,
     }
   },
   'Marketplace': {
@@ -151,7 +160,7 @@ var defaultZones = {
     skills: {
       'guile': 7,
       'diplomacy': 7,
-      'labour': 10,
+      'herbalism': 5,
     }
   },
   'Docks': {
@@ -183,7 +192,7 @@ var defaultZones = {
 
     },
     skills: {
-      'divinity': 25,
+      'divinity': 20,
       'diplomacy': 10,
     }
   },

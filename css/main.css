@@ -37,6 +37,10 @@ body, html {
   background: #f7f7f7;
   margin-bottom: 10px;
 }
+.zone.negative {
+  background: #d6c0c0;
+  border: 2px solid red;
+}
 .zone.active {
   background: #d8d8d8;
 }

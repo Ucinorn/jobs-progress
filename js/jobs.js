@@ -73,7 +73,7 @@ var defaultJobs = {
           },
           grifter: {
             name: "Grifter",
-            description: "",
+            description: "A petty thief and conman that lives hand to mouth most days, with the occasional big score that is spent just as quickly as it came. They are the first target for anyone wanting to find infomration in the city; but only the right price.",
             aptitudes: {
               labour: 0.5,
               combat: 1.5,
@@ -82,18 +82,18 @@ var defaultJobs = {
               whiteMagic: 1.5,
               blackMagic: 1,
               herbalism: 0.5,
-              diplomacy: 4,
+              diplomacy: 3,
               guile: 3,
               divinity: 2,
             },
             unlocked: false,
-            hint: "The griften weasels their was into every whispered conversation, side job and plot in the city. There is nowhere he hasn't been.",
-            unlock: "Complete 10 quests in all of the unlocked zones in the City area.",
+            hint: "The grifter weasels their was into every whispered conversation, side job and plot in the city. There is nowhere he hasn't been.",
+            unlock: "Complete 20 quests in all of the unlocked zones in the City area.",
             check: function(self) {
               var state = true;
               Object.keys(self.stats.zones).map(function(zonename, i) {
                   if (self.stats.zones[zonename].area == "City" && self.zones[zonename].unlocked) {
-                    if (self.stats.zones[zonename].completions < 10) {
+                    if (self.stats.zones[zonename].completions < 20) {
                       state = false;
                     }
                   }
@@ -101,6 +101,33 @@ var defaultJobs = {
               return state;
             },
             perks: ['Good Connections']
+          },
+          fighter: {
+            name: "Fighter",
+            description: "Whether they fight for king, country or gold, there will always be those who think violence is the first and only solution to all of life's problems. ",
+            aptitudes: {
+              labour: 2,
+              combat: 0.5,
+              archery: 1,
+              scouting: 1,
+              whiteMagic: 3,
+              blackMagic: 2,
+              herbalism: 4,
+              diplomacy: 1,
+              guile: 2,
+              divinity: 0.5,
+            },
+            unlocked: false,
+            check: function(self) {
+               var state = false;
+               self.graveyard.forEach(function(ret){
+                 if (ret.skills.combat >= 25) {state = true;}
+               });
+               return state;
+            },
+            hint: "Sometimes all you need in life is to be bigger and stronger than the other guy.",
+            unlock: "Retire a character with a Combat level of 25 or above",
+            perks: ['Jack Of All Trades']
           },
           witch: {
             name: "Witch",
@@ -297,7 +324,7 @@ var defaultJobs = {
             },
             hint: "The demons are always waiting for those desperate enough to ask for their help.",
             unlock: "Do a deal with the devil",
-            perks: ['Infernal Blood','Corruptor','Latent Power']
+            perks: ['Infernal Blood','Latent Power']
           },
           ranger: {
             name: "Ranger",
@@ -336,7 +363,7 @@ var defaultJobs = {
           },
           sniper: {
             name: "Sniper",
-            description: "A sniper is a deadly scout and marksman, trained to hunt men across worlds. They are are never seen and never fight on someone else's terms.",
+            description: "A sniper is a deadly scout and marksman, trained to hunt men across worlds. If ever you are unfortunate enough to encounter one, you were not their intended target.",
             aptitudes: {
               labour: 1,
               combat: 0.5,

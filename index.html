@@ -49,7 +49,7 @@
             <div class="col-3" style="text-align: right"><strong>LVL</strong></div>
             <div class="col-3" style="text-align: right"><strong>APT</strong></div>
           </div>
-          <div class="row no-gutters align-items-center tool" v-for="(skill, name, index) in player.skills">
+          <div class="row no-gutters align-items-center tool statline" v-for="(skill, name, index) in player.skills" v-bind:class="{ current: skill.rate > 0 }">
             <div class="tooltiptext">
               <div><strong>APT:   {{Number(player.currentJob.defaultAptitudes[name]).toFixed(2)}} + {{Number(player.currentJob.aptitudes[name] - player.currentJob.defaultAptitudes[name]).toFixed(2)}} </strong> </div>
               <div v-for="(multi, multiname, index) in multis" v-if="multi.type == 'apt' && multi.skill == name"> {{multiname}}: {{Math.round(multi.val * 100)}}%</div>
@@ -61,14 +61,15 @@
               <div v-for="(multi, multiname, index) in multis" v-if="multi.type == 'exp' && multi.skill == 'all'"> {{multiname}}: {{Math.round(multi.val * 100)}}%</div>
               <div><strong>Total: {{Math.round(skill.multi * 100)}}%</strong></div>
             </div>
-            <div class="col-3">
+            <div class="col-2">
               <span class="skillSquare" style="width: 100%;" v-html="generateIcon(name, 1)"></span>
             </div>
             <div class="col-5">
               <span>&nbsp;{{name}}</span>
             </div>
-            <div class="col-2">
+            <div class="col-3">
               {{skill.level}}
+              <sup v-if="skill.rate > 0">+ {{skill.rate}}</sup>
             </div>
             <div class="col-2" style="text-align: right">
               {{Number(player.currentJob.aptitudes[name]).toFixed(1)}}
@@ -97,10 +98,9 @@
                 <h6><span style="padding: 5px" v-html="generateIcon(player.currentZone.type)"></span>&nbsp;{{player.zone}}</h6>
               </div>
               <div class="col-5">
-                <button style="float: right; width: 90px;" @click="boostUp()" v-bind:disabled="boost.count > 0">Boost <span v-if="'Boosted' in multis">{{Number((multis.Boosted.val).toFixed(2))}}</span></button>
-                <!--<button v-if="!player.currentZone.finished" v-bind:disabled="player.currentZone.finished" @click="quest(player.zone)">Quest</button>
+                <!--<button style="float: right; width: 90px;" @click="boostUp()" v-bind:disabled="boost.count > 0">Boost <span v-if="'Boosted' in multis">{{Number((multis.Boosted.val).toFixed(2))}}</span></button>-->
+                <button v-if="!player.currentZone.finished" v-bind:disabled="player.currentZone.finished" @click="quest(player.zone)">Quest</button>
                 <button  v-if="player.currentZone.finished" v-bind:disabled="completingcount > 0" @click="completeQuest(player.zone)">Complete</button>
--->
               </div>
               <div class="col-12">
                 <div>
@@ -221,9 +221,9 @@
             <div class="col-8 " id="zones" v-if="Object.keys(player.currentZone ).length != 0">
               <div class="row justify-content-start">
                 <div class="col-6" v-for="(zone, name, index) in zones" v-if="zone.area === player.area && zone.unlocked">
-                  <div class="zone" @click="player.zone = name" v-bind:class="{active: name === player.zone}">
+                  <div class="zone" v-bind:class="{ negative: zone.rates.total <= 0 }" @click="player.zone = name" v-bind:class="{active: name === player.zone}">
                     <h5>
-                  {{name}}
+                  {{name}} <sup>({{zone.rates.total}})</sup>
                   </h5>
                     <div>
                       <div class="skillSquare" v-for="(skill, skillname, skillindex) in zone.skills">
@@ -259,12 +259,30 @@
             <div class="col-12">
               <hr>
             </div>
-            <div class="col-3" v-for="(up, name, index) in upgrades" v-if="up.unlocked && !(bought.includes(name))">
-              <div>{{name}}</div>
-              <div>{{up.description}}</div>
-              <button @click="buy(name)" :disabled="up.cost >= prestige.current ? true : false">
-                Buy for {{up.cost}}
-              </button>
+            <div class="col-3">
+              <strong>Upgrades</strong>
+            </div>
+            <div class="col-3" v-for="(up, name, index) in upgrades" v-if="up.unlocked && !(bought.includes(name)) && up.type != 'perk'">
+              <div class="tool zoneBox" >
+                <div>{{name}} ({{up.cost}} P)</div>
+                <button @click="buy(name)" :disabled="up.cost >= prestige.current ? true : false">
+                  Buy
+                </button>
+                <div class="tooltiptext">{{up.description}}</div>
+              </div>
+            </div>
+            <div class="col-12"><hr></div>
+            <div class="col-3">
+              <strong>Perk Upgrades</strong>
+            </div>
+            <div class="col-3" v-for="(up, name, index) in upgrades" v-if="up.unlocked && !(bought.includes(name)) && up.type == 'perk'">
+              <div class="tool zoneBox" >
+                <div>{{name}} ({{up.cost}} P)</div>
+                <button @click="buy(name)" :disabled="up.cost >= prestige.current ? true : false">
+                  Buy
+                </button>
+                <div class="tooltiptext">{{up.description}}</div>
+              </div>
             </div>
             <hr>
             <div class="col-12"><strong>BOUGHT UPGRADES</strong>

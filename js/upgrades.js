@@ -1,22 +1,12 @@
 var defaultUpgrades = {
-  'Reincarnator': {
-    description: "Permanently apply the Ancestral Spirit perk to your character",
-    type: "perk",
-    persistent: false,
-    cost: 1,
-    unlocked: true,
-    effect: function(self) {
-      self.setPerk('Ancestral Spirit');
-    }
-  },
   'Wanderlust': {
     description: "Enable the option to move on to other areas once the average difficulty is less than 50%",
-    type: "perk",
+    type: "general",
     persistent: true,
     cost: 10,
-    unlocked: true,
+    unlocked: false,
     effect: function(self) {
-     
+     self.config.wanderlust = true;
     }
   },
   'Deal with the Devil': {
@@ -30,6 +20,7 @@ var defaultUpgrades = {
       return (self.graveyard.length > 10);
     },
     effect: function(self) {
+      return false;
       if (self.graveyard.some(function(ret){return (ret.name === 'Soggoth The All Consuming')})) { return; }
       var newRet = {
         name: 'Soggoth The All Consuming',
@@ -47,15 +38,22 @@ var defaultUpgrades = {
   },
   'Follow the Mirage' : {
     description: "Unlock the Mirage Palace zone.",
-    type: "quest",
+    type: "general",
     persistent: true,
     cost: 1,
     unlocked: false,
     check: function(self) {
       return (self.player.area == 'desert' && Math.Random() > 0.95);
     },
+  },
+  'Reincarnator': {
+    description: "Permanently apply the Ancestral Spirit perk to your character",
+    type: "perk",
+    persistent: false,
+    cost: 1,
+    unlocked: true,
     effect: function(self) {
-      
+      self.setPerk('Ancestral Spirit');
     }
   },
 }
