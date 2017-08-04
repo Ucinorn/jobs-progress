@@ -76,29 +76,21 @@ var defaultJobs = {
             description: "A petty thief and conman that lives hand to mouth most days, with the occasional big score that is spent just as quickly as it came. They are the first target for anyone wanting to find infomration in the city; but only the right price.",
             aptitudes: {
               labour: 0.5,
-              combat: 1.5,
-              archery: 1.5,
-              scouting: 1.5,
-              whiteMagic: 1.5,
+              combat: 1,
+              archery: 0.5,
+              scouting: 2,
+              whiteMagic: 1,
               blackMagic: 1,
-              herbalism: 0.5,
+              herbalism: 1,
               diplomacy: 3,
               guile: 3,
-              divinity: 2,
+              divinity: 0.5,
             },
             unlocked: false,
-            hint: "The grifter weasels their was into every whispered conversation, side job and plot in the city. There is nowhere he hasn't been.",
-            unlock: "Complete 20 quests in all of the unlocked zones in the City area.",
+            hint: "The grifter weasels their was into every whispered conversation, side job and scheme in the city. Everyone meets him after spending enough time in the city.",
+            unlock: "Complete over 200 quests in in the City area.",
             check: function(self) {
-              var state = true;
-              Object.keys(self.stats.zones).map(function(zonename, i) {
-                  if (self.stats.zones[zonename].area == "City" && self.zones[zonename].unlocked) {
-                    if (self.stats.zones[zonename].completions < 20) {
-                      state = false;
-                    }
-                  }
-              });
-              return state;
+              return (self.stats.areas.City.completions > 200);
             },
             perks: ['Good Connections']
           },

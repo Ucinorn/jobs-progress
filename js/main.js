@@ -3,7 +3,7 @@
     name: 'game',
     data: {
       debug: false,
-      startup: false,
+      startup: true,
       view: 'world',
       chosenJob: "",
       questing: false,
