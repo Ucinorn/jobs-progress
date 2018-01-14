@@ -27,24 +27,18 @@
       </div>
     </div>
     <div class="container" style="min-height: 100vh;" v-else>
-      <div class="row align-items-center no-gutters">
-        <div class="col-6 row">
-          <div class="col-6"><strong>Job: {{jobs[player.job].name}}</strong></div>
-          <div class="col-3"><strong>Level: {{player.level}}</strong></div>
-          <div class="col-3"><strong>EXP: {{player.exp}} / {{player.next}}</strong></div>
-        </div>
-        <div class="col-4">
-          <button @click="save()">Save</button>
-          <button @click="load()">Load</button>
-        </div>
-        <div class="col-2"><strong>JOB LEGACY</strong></div>
-      </div>
-      <hr>
       <div class="row">
         <!-- sidebar -->
         <div class="col" id="sidebar">
-          <div class="row align-items-right no-gutters">
-            <div class="col-2"><strong></strong></div>
+          <h4>JOB LEGACY</h4>
+          <hr>
+          <div class="row align-items-right">
+              <div class="col-auto">Lvl {{player.level}} <strong>{{jobs[player.job].name}}</strong></div>
+              <div class="col">EXP: <strong>{{player.exp}} / {{player.next}}</strong></div>
+          </div>
+          <hr>
+            <div class="row align-items-right no-gutters">
+            <div class="col-2"></div>
             <div class="col-4" style="text-align: center"><strong>SKILL</strong></div>
             <div class="col-3" style="text-align: right"><strong>LVL</strong></div>
             <div class="col-3" style="text-align: right"><strong>APT</strong></div>
@@ -74,15 +68,26 @@
             <div class="col-2" style="text-align: right">
               {{Number(player.currentJob.aptitudes[name]).toFixed(1)}}
             </div>
-            <div class="col-12" style="text-align: center;">
-              <div style="height: 3px;" v-bind:style="{width: skill.progress + '%'}" v-bind:aria-valuenow="skill.progress" class="progress-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100">
+            <div class="col-12 progress" style="text-align: center;">
+              <div style="height: 1px;" v-bind:style="{width: skill.progress + '%'}" v-bind:aria-valuenow="skill.progress" class="progress-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100">
+              </div>
+            </div>
+          </div>
+          <hr>        
+          <div class="row no-gutters align-items-center">
+            <div class="col-6" v-for="(perk, name, index) in player.perks" v-if="player.currentJob.perks.includes(name)">
+              <div class="bordered tool">
+                <strong>{{name}}</strong>
+                <div class="tooltiptext">
+                  {{perks[name].description}}
+                </div>
               </div>
             </div>
           </div>
           <hr>
-          <div class="row no-gutters align-items-center" v-for="(perk, name, index) in player.perks">
-            <div class="col-12 tool">
-              <strong>{{name}}</strong>
+          <div class="row no-gutters align-items-center justify-content-center" >
+            <div class="col-4 tool" v-for="(perk, name, index) in player.perks" v-if="!player.currentJob.perks.includes(name)">
+              <small>{{name}}</small>
               <div class="tooltiptext">
                 {{perks[name].description}}
               </div>
@@ -104,10 +109,12 @@
               </div>
               <div class="col-12">
                 <div>
-                  Progress: {{player.currentZone.current}} / {{player.currentZone.max}} <strong>{{player.currentZone.rates.total}}</strong> per tick
+                  Progress: {{player.currentZone.current}} / {{player.currentZone.max}} <strong>{{player.currentZone.rates.total}}</strong> per tick | CC: {{completingcount}}
                 </div>
-                <div v-bind:style="{width: player.currentZone.progress + '%'}" v-bind:aria-valuenow="player.currentZone.progress" class="progress-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100">
-                  {{player.currentZone.progress}}%
+                <div class="progress">
+                  <div v-bind:style="{width: player.currentZone.progress + '%'}" v-bind:aria-valuenow="player.currentZone.progress" class="progress-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100">
+                    {{player.currentZone.progress}}%
+                  </div>
                 </div>
               </div>
             </div>
@@ -138,6 +145,57 @@
             <div class="col"><button class='btn btn-block' @click="view = 'stats'" v-bind:disabled="view == 'stats' || prestige.total < 1">HALL OF HEROES</button></div>
             <div class="col-12">
               <hr>
+            </div>
+          </div>
+          <!-- world -->
+          <div class="row" v-if="view == 'world'">
+            <!--area selector -->
+            <div class="col-3"><strong>AREAS</strong></div>
+            <div class="col-9"><strong>ZONES</strong></div>
+            <div class="col-12">
+              <hr>
+            </div>
+            <div class="col-3" id="areas">
+              <div v-for="area in areas">
+                <button class="btn btn-block" @click="player.area = area" v-bind:disabled="player.area === area">
+                  {{area}}
+                </button>
+                <hr>
+              </div>
+            </div>
+            <!-- zone selector -->
+            <div class="col-9 " id="zones" v-if="Object.keys(player.currentZone ).length != 0">
+                <div v-for="(zone, name, index) in zones" v-if="zone.area === player.area && zone.unlocked">
+                   <div class="col zone row justify-content-start" v-bind:class="{ negative: zone.rates.total <= 0 }" @click="player.zone = name" v-bind:class="{active: name === player.zone}">
+                    <div class="col-3">
+                      {{name}} <br> ( <span v-if="zone.rates.total  > 0 ">+</span>{{zone.rates.total}} ) <br> q: {{zone.quests}}
+                    </div>
+                    <div class="col-9">
+                      <div class="skillSquare" v-for="(skill, skillname, skillindex) in zone.skills">
+                        <span v-html="generateIcon(skillname, 1, zone.difficulty[skillname])"></span><span>{{skill}}</span>
+                      </div>
+                    </div>
+                    <div class="col-12" >
+                      <div class="progress" style="height: 3px;">
+                        <div v-bind:style="{width: zone.progress + '%'}" v-bind:aria-valuenow="zone.progress" class="progress-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100">
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              <hr>
+              <div class="row">
+                <template v-for="(zone, name, index) in zones" v-if="zone.area === player.area && !zone.unlocked">
+                 <div class="col-4" v-bind:class="{ locked: !zone.unlocked }">
+                   <div class="zoneBox tool">
+                     <i class="fa fa-lock" aria-hidden="true"></i> {{name}}
+                     <div class="tooltiptext">
+                       {{zone.hint}}
+                     </div>
+                   </div>
+                </div>
+              </template>
+              </div>
             </div>
           </div>
           <!-- jobs -->
@@ -199,57 +257,6 @@
               <hr>
               <strong>HINT:</strong>
               <div>{{jobs[chosenJob].hint}}</div>
-            </div>
-          </div>
-          <!-- world -->
-          <div class="row" v-if="view == 'world'">
-            <!--area selector -->
-            <div class="col-4"><strong>AREAS</strong></div>
-            <div class="col-8"><strong>ZONES</strong></div>
-            <div class="col-12">
-              <hr>
-            </div>
-            <div class="col-4" id="areas">
-              <div v-for="area in areas">
-                <button class="btn btn-block" @click="player.area = area" v-bind:disabled="player.area === area">
-                  {{area}}
-                </button>
-                <hr>
-              </div>
-            </div>
-            <!-- zone selector -->
-            <div class="col-8 " id="zones" v-if="Object.keys(player.currentZone ).length != 0">
-              <div class="row justify-content-start">
-                <div class="col-6" v-for="(zone, name, index) in zones" v-if="zone.area === player.area && zone.unlocked">
-                  <div class="zone" v-bind:class="{ negative: zone.rates.total <= 0 }" @click="player.zone = name" v-bind:class="{active: name === player.zone}">
-                    <h5>
-                  {{name}} <sup>({{zone.rates.total}})</sup>
-                  </h5>
-                    <div>
-                      <div class="skillSquare" v-for="(skill, skillname, skillindex) in zone.skills">
-                        <div v-html="generateIcon(skillname, 1, zone.difficulty[skillname])"></div>
-                        <div style="padding-top: 5px;">{{skill}}</div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <hr>
-              <div class="row">
-                <template v-for="(zone, name, index) in zones" v-if="zone.area === player.area && !zone.unlocked">
-                 <div class="col" v-bind:class="{ locked: !zone.unlocked }">
-                   <div class="zoneBox tool">
-                     <i class="fa fa-lock" aria-hidden="true"></i> {{name}}
-                     <div class="tooltiptext">
-                       {{zone.hint}}
-                     </div>
-                   </div>
-                </div>
-              </template>
-              </div>
-            </div>
-            <div v-else>
-              Choose an area to start adventuring
             </div>
           </div>
           <!-- upgrades -->
@@ -347,7 +354,8 @@
       <button @click="player.level++">LVL+</button>
       <button @click="player.level--">LVL-</button>
       <button @click="completeQuest()">COMPLETE</button>
-      <button @click="message('testing', 'general');">Test message</button>
+      <button @click="logData()">LogData()</button>
+      <button @click="message('testing', 'general')">Test message</button>
       <hr>messages: {{messages}}
       <hr>multis: {{multis}}
       <hr>displayMultis: {{displayMultis}}

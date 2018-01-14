@@ -2,7 +2,7 @@
     el: '#app',
     name: 'game',
     data: {
-      debug: false,
+      debug: true,
       startup: true,
       view: 'world',
       chosenJob: "",
@@ -12,14 +12,11 @@
         hintcount: 3,
         wanderlust: false
       },
-      boost: {
-        amount: 1,
-        count: 0,
-        decay: 0.005,
-        max: 5,
+      constants: {
+        loopspeed: 250,
+        completingcount: 15,
       },
       interval: {},
-      loopspeed: 250,
       player: getDefaultPlayer(),
       multis: {},
       displayMultis: {},
@@ -120,7 +117,7 @@
         }
         */
       },
-      'loopspeed': function() {
+      'constants.loopspeed': function() {
         this.endLoop();
         this.startLoop();
       },
@@ -280,56 +277,76 @@
           }
         });
         // loop through multi array, assigning any multis found to their appropriate location
-        var exp = {};
-        var progress = {};
-        var aptitudes = {};
+        var tempmultis = {
+          exp: {},
+          progress: {},
+          apt: {}
+        }
         // reset all to 1 (ie. 100% multiplier)
         Object.keys(self.player.skills).map(function(skill, i) {
-          exp[skill] = 1;
-          progress[skill] = 1;
-          aptitudes[skill] = 1;
+          tempmultis.exp[skill] = {};
+          tempmultis.progress[skill] = {};
+          tempmultis.apt[skill] = {};
+          Object.keys(self.zones).map(function(zonename, z) {
+            tempmultis.exp[skill][zonename] = {base: 1, final: 1};
+            tempmultis.progress[skill][zonename] = {base: 1, final: 1};
+            tempmultis.apt[skill][zonename] = {base: 1, final: 1};
+          });
         });
-        // loop through multis, then all the skills, adding up the value if they match or have the 'all skill'
+        // loop through multis, then all the zones,  then all the skills, adding up the value if they match or have the 'all' zone or skill
+       // the behaviour if multis is as follows: 
+       // all multis are assigned 
+        
         Object.keys(self.multis).map(function(name, i) {
-          Object.keys(self.player.skills).map(function(skillname, j) {
-            if (self.multis[name].type == "exp") {
-              if (self.multis[name].skill == skillname || self.multis[name].skill == 'all') {
-                exp[skillname] += self.multis[name].val;
+          Object.keys(self.zones).map(function(zonename, z) {
+            Object.keys(self.player.skills).map(function(skillname, s) {
+              // if a zone or area is explicitly set, validate for it here
+              if ('zone' in self.multis[name] && self.multis[name].zone != zonename) {
+                return;
               }
-            } else if (self.multis[name].type == 'progress') {
-              if (self.multis[name].skill == skillname || self.multis[name].skill == 'all') {
-                progress[skillname] += self.multis[name].val;
+              if ('area' in self.multis[name] && self.multis[name].area != self.zones[zonename].area) {
+                return;
               }
-            } else if (self.multis[name].type == 'apt') {
+              var ref = tempmultis[self.multis[name].type][skillname][zonename];
               if (self.multis[name].skill == skillname || self.multis[name].skill == 'all') {
-                aptitudes[skillname] += self.multis[name].val;
+                if (self.multis[name].type in tempmultis) {
+                    if (name in self.multis[name]) { // any named multis are multiplicative
+                      if (!(name in ref)) {ref[name] = 1}
+                      ref[name] += self.multis[name].val;
+                    } else {
+                      ref.base += self.multis[name].val;
+                    }
+                  } else {
+                    console.log('Multi Type does not exist! Check the perk that set it');
+                    console.log(self.multis[name]);
+                  }
               }
-            } else {
-              console.log('multi type not found:');
-              console.log(self.multis[name]);
-            }
+              // calculate a final multi value by multipliying all the different multis together
+              var final = 1;
+              Object.keys(ref).forEach(function (key) {
+                if (key == 'final') {return;} 
+                final = final * ref[key];
+              });
+              ref.final = final;
+            });
           });
         });
-        // map all multis to their repective locations
+        // map all multis to their respective locations
         Object.keys(self.player.skills).map(function(skill, i) {
-          // do exp multis first, they look like:  player.skills[skill].multi and effect EXP gain
-          self.player.skills[skill].multi = exp[skill];
-          // progress multis look like: zones[zone].multis[skill] and effect the rate of gaining progress in zones PER SKILL
-          Object.keys(self.zones).map(function(zone, j) {
-            self.zones[zone].multis[skill] = progress[skill];
+         Object.keys(self.zones).map(function(zone, j) {
+           // we calculate the per-zone aptitude value here to add its multiplier to the progress and exp as a multiplicative multi
+           // the apititudes used for display are later on.
+            var apt = self.jobs[self.player.job].defaultAptitudes[skill] * tempmultis.apt[skill][zone].final; 
+            // do exp multis times the aptitude modifier
+            self.player.skills[skill].multi = Number(tempmultis.exp[skill][zone].final * apt).toFixed(2);
+            // do progress multis times the aptitude modifier
+            self.zones[zone].multis[skill] = Number(tempmultis.progress[skill][zone].final * apt).toFixed(2);
           });
-          // aptitude multis are in jobs[job].multis[skill] and effect the final aptitude value, which are generated by multi * default aptitude
-          // be careful with this, as aptitude effects progress gains as well as exp gains (to a small degree). Stacking it could be OP
-          Object.keys(self.jobs).map(function(job, j) {
-            self.jobs[job].multis[skill] = aptitudes[skill];
-            self.jobs[job].aptitudes[skill] = Number(self.jobs[job].defaultAptitudes[skill] * self.jobs[job].multis[skill]).toFixed(2);
-          });
+          // may as well set the aptitudes for display while we are here. 
+           self.jobs[self.player.job].aptitudes[skill] = Number(self.jobs[self.player.job].defaultAptitudes[skill] * tempmultis.apt[skill][self.player.zone].final).toFixed(2);
         });
-        self.displayMultis = {
-          exp,
-          progress,
-          aptitudes
-        };
+        
+        self.displayMultis = tempmultis;
       },
       calculateZones: function() {
         var self = this;
@@ -345,30 +362,19 @@
           //console.log('max is: ' + total);
         });
       },
-      boostUp: function() {
-        if ('Boosted' in this.multis) {
-          var next = this.multis.Boosted.val + this.boost.amount;
-          if (next <= this.boost.max) {
-            this.multis.Boosted = {
-              type: 'progress',
-              skill: 'all',
-              val: Math.round(next)
-            };
+      calculateQuests: function() {
+        var self = this;
+        //console.log('calcing quest counts');
+        Object.keys(self.zones).map(function(key, index) {
+          if (self.zones[key].questCountdown <= 0) {
+            if (self.zones[key].quests < self.zones[key].maxQuests) {
+              self.zones[key].quests++;
+              self.zones[key].questCountdown = self.zones[key].questCountdownDefault;
+            }
           } else {
-            this.multis.Boosted = {
-              type: 'progress',
-              skill: 'all',
-              val: 5
-            };
+            self.zones[key].questCountdown--;
           }
-        } else {
-          this.multis.Boosted = {
-            type: 'progress',
-            skill: 'all',
-            val: this.boost.amount
-          };
-        }
-        this.boost.count = 5;
+        });
       },
       calculateRates: function() {
         var self = this;
@@ -376,11 +382,8 @@
           // loop through zones, setting increase rates for each.
           var total = 0;
           Object.keys(self.zones[zonename].skills).map(function(skill, index) {
-            // calculate progress based on player skill times aptitude
+            // calculate progress based on player skill
             var amount = self.player.skills[skill].level + 1;
-            if (self.player.currentJob.aptitudes[skill] > 1) {
-              amount = amount * self.player.currentJob.aptitudes[skill];
-            }
             // multiply the result by the total progress multiplier
             if (self.zones[zonename].multis[skill] > 1) {
               amount = amount * self.zones[zonename].multis[skill];
@@ -397,31 +400,35 @@
         // set the EXP rate of the current zone while we are here
           Object.keys(self.player.skills).map(function(key, index) {
             if (key in self.player.currentZone.skills) {
-              var baseIncrease = self.player.currentZone.skills[key] + 1;
-              var increase = Math.round((baseIncrease * self.player.currentJob.aptitudes[key]) * (1 + (self.player.currentZone.difficulty[key])) / 2);
+              var baseIncrease = self.player.currentZone.skills[key] + 10;
+              var increase = Math.round((baseIncrease * (1 + (self.player.currentZone.difficulty[key])) / 2));
               self.player.skills[key].rate = increase;
             } else {
               self.player.skills[key].rate = 0;
             }
           });
-        
       },
       quest: function(zone) {
-       if (this.player.currentZone.finished) {
-            this.completeQuest();
-            return;
-        }
-        /* removing this for now, it slowed the game down too much
-        if (this.player.currentZone.finished) {
-          // check if the quest is finished. if it is, use the progress bar to track back and complete the quest
-          if (this.player.currentZone.progress <= 10) {
-            this.completeQuest();
-          } else {
-            this.player.currentZone.progress -= 10; // MAGIC NUMBER hardcoded trackab of 10 times (100/10)
+        if (this.player.currentZone.quests <= 0) {
+          // perform chores while there are no quests
+          // skill increase by 1, different skill for each zone type 
+          switch (this.player.currentZone.type) {
+              case "urban":
+                this.increaseXP('labour', 1);
+                break;
+              case "dungeon":
+                this.increaseXP('combat', 1);
+                break;
+              case "wilderness":
+                this.increaseXP('scouting', 1);
+                break;
           }
           return;
         }
-        */
+        if (this.player.currentZone.finished) {
+              this.completeQuest();
+              return;
+        }
         // get the total increase from the rate;
         var total = this.player.currentZone.rates.total;
         // progress must always be at least 1. if not, just return and nothing happens.
@@ -441,8 +448,8 @@
         if (typeof zone == 'undefined') {
           zone = this.player.zone
         }
-
-        this.completingcount = 5;
+        
+        this.player.currentZone.quests--;
         this.player.currentZone.finished = false;
         this.player.currentZone.progress = 0;
         this.player.currentZone.current = 0;
@@ -500,8 +507,12 @@
         if (this.player.exp + amount >= this.player.next) {
           this.player.level++;
           this.player.exp = 0;
-          // another compounding exp formula
-          this.player.next = 10;
+          // another compounding exp formula, this time EXP is equal to all the player levels added up (ie. 1 + 2 + 3 + 4 etc.)
+          var tempnext = 1;
+          for(var i=0;i< this.player.level; i++){
+            tempnext += i;
+          }
+          this.player.next = tempnext;
           if (remainder > 0) {
             this.increasePlayerXP(remainder);
           }
@@ -540,10 +551,10 @@
       startLoop: function() {
         console.log('starting Loop');
         var self = this;
-        if (this.loopspeed > 0) {
+        if (this.constants.loopspeed > 0) {
           this.interval.game = setInterval(function() {
             self.loop();
-          }, this.loopspeed);
+          }, this.constants.loopspeed);
         }
         this.interval.save = setInterval(function() {
           self.save();
@@ -553,28 +564,10 @@
         if (this.startup) {
           return;
         }
-        if ('Boosted' in this.multis) {
-          var current = this.multis.Boosted.val;
-          if (current > 0.1) {
-            this.multis.Boosted = {
-              type: 'progress',
-              skill: 'all',
-              val: Math.ceil(current * (1 - this.boost.decay))
-            };
-          } else {
-            delete this.multis.Boosted;
-          }
-          var self = this;
-        }
         if (this.player.zone.length > 0) {
           this.quest();
         }
-        if (this.completingcount > 0) {
-          this.completingcount--;
-        }
-        if (this.boost.count > 0) {
-          this.boost.count--;
-        }
+        this.calculateQuests();
         this.checkPerks();
       },
       endLoop: function() {

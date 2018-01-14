@@ -375,7 +375,11 @@ var defaultZones = {
 };
 // sprinkle the default values for all the zones in here so we don't have to have them above.
 Object.keys(defaultZones).map(function(key, index) {
-  defaultZones[key].level = 1;
+  defaultZones[key].level = 1;  
+  defaultZones[key].questCountdown = 0;  
+  if (!('maxQuests' in defaultZones[key])) { defaultZones[key].maxQuests = 3; }
+  if (!('questCountdownDefault' in defaultZones[key])) { defaultZones[key].questCountdownDefault = 15; }
+  defaultZones[key].quests = defaultZones[key].maxQuests;  
   defaultZones[key].completeCount = 1;
   defaultZones[key].progress = 0;
   defaultZones[key].current = 0;

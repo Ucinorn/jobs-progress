@@ -13,16 +13,12 @@ var defaultPerks = {
      description: "You are destined for greatness. All aptitudes are increased by 100% while adventuring in the starting area.",
      cost: 10,
      check: function(self) {
-        if (self.player.currentZone.area == 'Village') {
-          self.multis['Chosen One'] = {type: 'apt', skill: 'all', val: 1};
-        } else {
-          delete self.multis['Chosen One'];
-        }
+        self.multis['Chosen One'] = {type: 'apt', skill: 'all', val: 1, area: 'Village'};
      }
    },
    'Constant Learner': {
      description: "Always increase the aptitude of your lowest level skill by 200%.",
-     cost: 20,
+     cost: 35,
      check: function(self) {
         var lowest = 'combat';
         Object.keys(self.player.skills).map(function(skill, i) {
@@ -34,11 +30,11 @@ var defaultPerks = {
      }
    },
    'Masochist': {
-     description: "Completing quests in zones with skill levels higher than your character's grants even more EXP.",
+     description: "Completing quests in zones with any skill level double or more than yours grants 100% more EXP.",
      cost: 5,
      check: function(self) {
         var state = Object.keys(self.player.currentZone.skills).some(function(skill, i) {
-          return (self.player.currentZone.skills[skill] < self.player.skills[skill]);
+          return (self.player.currentZone.skills[skill] < Math.round(self.player.skills[skill] * 2));
         });
         if (state) {
           self.multis.Masochistic = {type: 'exp', skill: 'all', val: 1};
@@ -71,9 +67,9 @@ var defaultPerks = {
      }
    },
    'Salt of the Earth': {
-     description: "Questing in zones that include a Labour component applies a temporary 50% boost to all progress.",
+     description: "Finishing a quest in zones that include a Labour component applies a temporary 50% boost to all progress.",
      cost: 10,
-     check: function(self) {
+     onQuestComplete: function(self) {
        var hasLabour = false;
        Object.keys(self.player.currentZone.skills).map(function(skillname, i) {
          if (skillname == 'labour') {
@@ -97,8 +93,30 @@ var defaultPerks = {
        }
      }
    },
+   'Wanderlust': {
+     description: "Whenever you finish a quest you have a 1% chance to wander to a random viable zone in your area. This chance increases to 10% if no quest is immediately available.",
+     cost: 5,
+     active: true,
+     onQuestComplete: function(self) {
+       if (!this.active) {return}
+       var chance = 0.01;
+       if (self.completingcount > 0) {
+         chance = 0.1;
+       }
+       if (Math.rand() < chance) {
+         // filter the zones to just the ones that have positive possible progress, and are in the same area
+         var zones = Object.keys(self.zones).filter(function(zonename){
+           return (self.zones[zonename].progress > 0 && self.zones[zonename].area === self.player.area);
+         })
+         console.log(zones);
+         if (zones.length > 0) {
+           self.player.zone = zones[Math.floor(Math.random() * zones.length)];
+         }
+       }
+     }
+   },
    'Bubbling Cauldron': {
-     description: "5% chance with each quest completion to craft and drink a random potion, granting boosts to your stats.",
+     description: "5% chance with each quest completion to craft and drink a random potion, granting temporary boosts to your stats.",
      cost: 25,
      onQuestComplete: function(self) {
        // 5% chance of crafting

@@ -5,11 +5,13 @@ body, html {
 }
 #app {
   width: 100%;
-  padding: 10px;
+  margin: 10px;
 }
 #sidebar {
   max-width: 250px;
   min-width: 250px;
+  border-right: 3px solid grey;
+  min-height: 100vh;
 }
 #currentZone {
   border: 1px solid grey;
@@ -54,7 +56,6 @@ body, html {
   text-align: center;
 }
 .skillSquare {
-  padding: 3px; 
   min-width: 30px;
   display: inline-block;
 }
@@ -75,6 +76,7 @@ body, html {
 }
 .tool {
   position: relative;
+  z-index: 100;
 }
 .tool .tooltiptext {
     visibility: hidden;
@@ -82,10 +84,10 @@ body, html {
     background: white;
     border: 1px solid black;
     padding: 5px;
-    position: fixed;
+    position: absolute;
     z-index: 9999;
-    bottom: 10px;
-    right: 10px; 
+    top: 10px;
+    left: 110%; 
 }
 .tool:hover {
   opacity: 0.9;
