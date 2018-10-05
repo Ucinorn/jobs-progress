@@ -20,6 +20,8 @@
       player: getDefaultPlayer(),
       multis: {},
       displayMultis: {},
+			boosts: {},
+			displayBoosts: {},
       stats: {},
       graveyard: [],
       prestige: {
@@ -262,8 +264,8 @@
       calculateMultis: function() {
         //console.log('calculating multis');
         var self = this;
-        // start with the difficulty multiplier for all skills in all zones. This effects the total EXP you receive 
-        // This is a master multiplier applied after other multis. 
+        // start with the difficulty multiplier for all skills in all zones. This effects the total EXP you receive
+        // This is a master multiplier applied after other multis.
         Object.keys(self.zones).map(function(zone, i) {
           Object.keys(self.zones[zone].skills).map(function(skill, j) {
             self.zones[zone].difficulty[skill] = Number((self.zones[zone].skills[skill] / (self.player.skills[skill].level + 1)).toFixed(3));
@@ -294,9 +296,9 @@
           });
         });
         // loop through multis, then all the zones,  then all the skills, adding up the value if they match or have the 'all' zone or skill
-       // the behaviour if multis is as follows: 
-       // all multis are assigned 
-        
+       // the behaviour if multis is as follows:
+       // all multis are assigned
+
         Object.keys(self.multis).map(function(name, i) {
           Object.keys(self.zones).map(function(zonename, z) {
             Object.keys(self.player.skills).map(function(skillname, s) {
@@ -324,7 +326,7 @@
               // calculate a final multi value by multipliying all the different multis together
               var final = 1;
               Object.keys(ref).forEach(function (key) {
-                if (key == 'final') {return;} 
+                if (key == 'final') {return;}
                 final = final * ref[key];
               });
               ref.final = final;
@@ -336,16 +338,16 @@
          Object.keys(self.zones).map(function(zone, j) {
            // we calculate the per-zone aptitude value here to add its multiplier to the progress and exp as a multiplicative multi
            // the apititudes used for display are later on.
-            var apt = self.jobs[self.player.job].defaultAptitudes[skill] * tempmultis.apt[skill][zone].final; 
+            var apt = self.jobs[self.player.job].defaultAptitudes[skill] * tempmultis.apt[skill][zone].final;
             // do exp multis times the aptitude modifier
             self.player.skills[skill].multi = Number(tempmultis.exp[skill][zone].final * apt).toFixed(2);
             // do progress multis times the aptitude modifier
             self.zones[zone].multis[skill] = Number(tempmultis.progress[skill][zone].final * apt).toFixed(2);
           });
-          // may as well set the aptitudes for display while we are here. 
+          // may as well set the aptitudes for display while we are here.
            self.jobs[self.player.job].aptitudes[skill] = Number(self.jobs[self.player.job].defaultAptitudes[skill] * tempmultis.apt[skill][self.player.zone].final).toFixed(2);
         });
-        
+
         self.displayMultis = tempmultis;
       },
       calculateZones: function() {
@@ -411,7 +413,7 @@
       quest: function(zone) {
         if (this.player.currentZone.quests <= 0) {
           // perform chores while there are no quests
-          // skill increase by 1, different skill for each zone type 
+          // skill increase by 1, different skill for each zone type
           switch (this.player.currentZone.type) {
               case "urban":
                 this.increaseXP('labour', 1);
@@ -448,7 +450,7 @@
         if (typeof zone == 'undefined') {
           zone = this.player.zone
         }
-        
+
         this.player.currentZone.quests--;
         this.player.currentZone.finished = false;
         this.player.currentZone.progress = 0;
@@ -527,7 +529,7 @@
         // call level up event to trigger any other stuff
         this.player.skills[key].level++;
         this.player.skills[key].exp = 0;
-        // use compounding interest formula to calculate the EXP limit for our new level.  
+        // use compounding interest formula to calculate the EXP limit for our new level.
         this.player.skills[key].next = Math.round(10 * (Math.pow(1 + 0.025, this.player.skills[key].level) - 1) / 0.025);
         var self = this;
         // go through perks, calling onLevelUp functions if they exist
@@ -646,7 +648,7 @@
         localStorage.removeItem('player_save');
         var newData = getDefaultPlayer();
         this.multis = {},
-          // sprinkle stuff into the new player data 
+          // sprinkle stuff into the new player data
           this.player.level = newData.level;
         this.player.exp = newData.exp;
         this.player.next = newData.next;

@@ -24,7 +24,7 @@ var defaultPerks = {
         Object.keys(self.player.skills).map(function(skill, i) {
           if (self.player.skills[skill].level > 0 && self.player.skills[skill].level < self.player.skills[lowest].level) {
             lowest = skill;
-          }  
+          }
         });
         self.multis['Constant Learner'] = {type: 'apt', skill: lowest, val: 2};
      }
@@ -279,7 +279,7 @@ var defaultPerks = {
       if (self.player.currentZone.area == 'City') {
           self.multis['Good Connections'] = {type: 'apt', skill: 'all', val: 1};
       } else {
-          delete self.multis['Good Connections'] 
+          delete self.multis['Good Connections']
       }
      }
    },
@@ -312,21 +312,22 @@ var defaultPerks = {
      }
    },
    'Pillager': {
-     description: "You live from victim to victim, and don't fare well outside of human settlements. Your progress and exp gain in non-urban zones is reduced.",
+     description: "You have to raid and pillage, and don't fare well outside of human settlements. Your progress and exp gain in non-urban zones is reduced.",
      check: function(self) {
         if (self.currentZone.type != 'urban') {
           self.multis['Pillager Progress'] = {type: 'progress', skill: 'all', val: -1};
           self.multis['Pillager EXP'] = {type: 'exp', skill: 'all', val: -1};
        } else {
-          delete self.multis.Pillager;
+          delete self.multis.multis['Pillager Progress'];
+          delete self.multis.multis['Pillager EXP'];
        }
      }
    },
    'Infernal Blood': {
-     description: "You have exchanged your soul for the power in demon blood, granting terrifying powers. All quest completions contribute exp towards your combat, black magic and guile skills.",
+     description: "You have exchanged your soul for the power in demon blood, granting terrifying powers. All quest completions contribute 1 exp towards your combat, black magic and guile skills.",
      onQuestComplete: function(self, zone) {
         ['combat', 'blackMagic', 'guile'].forEach(function(key) {
-           self.increaseXP(key, Math.ceil(1.5  * (self.player.skills[key].level + 1)));
+           self.increaseXP(key, 1));
         });
      }
    },
@@ -334,7 +335,7 @@ var defaultPerks = {
      description: "Completing quests in zones with a divinity component slowly corrupts it, add and building up the guile level until it matches divinity.",
      cost: 50,
      onQuestComplete: function(self, zone) {
-      // copy paladin system and add dynamic level adding. 
+      // copy paladin system and add dynamic level adding.
      }
    },
   'Latent Power': {
@@ -353,11 +354,11 @@ var defaultPerks = {
        if (self.player.currentZone.type == 'dungeon') {
          skills.forEach(function(skill){
             self.multis['Bear Strength: ' + skill] = {type: 'apt', skill: skill, val: 0.5};
-         }) 
+         })
        } else {
          skills.forEach(function(skill){
           delete self.multis['Bear Strength: ' + skill];
-         }) 
+         })
        }
      }
    },
@@ -369,11 +370,11 @@ var defaultPerks = {
        if (self.player.currentZone.type == 'dungeon') {
          skills.forEach(function(skill){
             self.multis['Hawk Vision: ' + skill] = {type: 'apt', skill: skill, val: 0.5};
-         }) 
+         })
        } else {
          skills.forEach(function(skill){
           delete self.multis['Hawk Vision: ' + skill];
-         }) 
+         })
        }
      }
    },
@@ -385,16 +386,16 @@ var defaultPerks = {
        if (self.player.currentZone.type == 'dungeon') {
          skills.forEach(function(skill){
             self.multis['Owl Wisdom: ' + skill] = {type: 'apt', skill: skill, val: 0.5};
-         }) 
+         })
        } else {
          skills.forEach(function(skill){
           delete self.multis['Owl Wisdom: ' + skill];
-         }) 
+         })
        }
      }
    },
    'Righteous Fury': {
-     description: "Completing quests in zones with a Guile component builds fury over time, which multiplies combat aptitude. Fury decays half as quickly as it builds",
+     description: "Completing quests in zones with a Guile component builds fury over time, which multiplies combat aptitude to a max of 5x. Fury decays half as quickly as it builds",
      cost: 50,
      onQuestComplete: function(self, zone) {
        var hasGuile = false;
@@ -412,7 +413,7 @@ var defaultPerks = {
           } else {
              self.multis['Righteous Fury'] = {type: 'apt', skill: 'combat', val: 0.2};
           }
-       } else { // when inactive, it will decay over time 
+       } else { // when inactive, it will decay over time
           if ('Righteous Fury' in self.multis && self.multis['Righteous Fury'].val > 0) {
             var currenthigh =  self.multis['Righteous Fury'].val;
             self.multis['Righteous Fury'] = {type: 'apt', skill: 'combat', val: Number((currenthigh - 0.1).toFixed(1))};
@@ -423,7 +424,7 @@ var defaultPerks = {
      }
    },
    'Despite a cursed life...': {
-     description: "No amount of talent can make up for the disability of Goblin blood. You gain experience at half the normal rate.",
+     description: "No amount of talent can make up for the taint of Goblin blood. You gain experience at half the normal rate.",
      check: function(self) {
        self.multis['Despite a cursed life...'] = {type: 'exp', skill: 'all', val: -0.5};
      }
@@ -501,15 +502,15 @@ var defaultPerks = {
 // loop through perks, adding empty functions where they are not defined. Saves us having to try catch for their existence elsewhere in the code
 Object.keys(defaultPerks).map(function(key, index) {
   if (typeof defaultPerks[key].check == 'undefined') {
-    defaultPerks[key].check = function(self) {};
+    defaultPerks[key].check = function() {};
   }
   if (typeof defaultPerks[key].onQuestComplete == 'undefined') {
-    defaultPerks[key].onQuestComplete = function(self) {};
+    defaultPerks[key].onQuestComplete = function() {};
   }
   if (typeof defaultPerks[key].onLevelUp == 'undefined') {
-    defaultPerks[key].onLevelUp = function(self) {};
+    defaultPerks[key].onLevelUp = function() {};
   }
   if (typeof defaultPerks[key].onPlayerLevelUp == 'undefined') {
-    defaultPerks[key].onPlayerLevelUp = function(self) {};
+    defaultPerks[key].onPlayerLevelUp = function() {};
   }
 });
