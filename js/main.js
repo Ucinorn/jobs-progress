@@ -22,7 +22,6 @@
       displayMultis: {},
 			boosts: {},
 			displayBoosts: {},
-      stats: {},
       graveyard: [],
       prestige: {
         confirm: '',
@@ -39,6 +38,7 @@
       perks: defaultPerks,
       upgrades: defaultUpgrades,
       bought: [],
+      stats: {},
       icons: {
         labour: "industry",
         combat: 'shield',
@@ -262,7 +262,15 @@
         this.$forceUpdate();
       },
       calculateMultis: function() {
-        //console.log('calculating multis');
+				// multis look like this
+				// {type: 'apt', skill: 'all', val: 0.2, area:'areaname', zone:'zonename', name:'someidentifier', time: "", boost: false};
+				// type, skill and val are mandatory; all the rest are optional params
+				// zone and area scope mutis to be active in specific spots only.
+				// name is a special value that allows you to group multis together.
+				// unnamed mutlis will be added together in a 'base' name, while every named multi will be added together
+				// , then all the different groups are multiplied
+				//console.log('calculating multis');
+
         var self = this;
         // start with the difficulty multiplier for all skills in all zones. This effects the total EXP you receive
         // This is a master multiplier applied after other multis.
@@ -271,6 +279,7 @@
             self.zones[zone].difficulty[skill] = Number((self.zones[zone].skills[skill] / (self.player.skills[skill].level + 1)).toFixed(3));
           });
         });
+
         // check first if any multis have expired (ie. are temporary)
         Object.keys(self.multis).map(function(key, i) {
           var time = new Date();
@@ -296,7 +305,7 @@
           });
         });
         // loop through multis, then all the zones,  then all the skills, adding up the value if they match or have the 'all' zone or skill
-       // the behaviour if multis is as follows:
+       // the behaviour of multis is as follows:
        // all multis are assigned
 
         Object.keys(self.multis).map(function(name, i) {
@@ -309,25 +318,28 @@
               if ('area' in self.multis[name] && self.multis[name].area != self.zones[zonename].area) {
                 return;
               }
+							// set up a
               var ref = tempmultis[self.multis[name].type][skillname][zonename];
               if (self.multis[name].skill == skillname || self.multis[name].skill == 'all') {
-                if (self.multis[name].type in tempmultis) {
+								else if (self.multis[name].type in tempmultis) {
                     if (name in self.multis[name]) { // any named multis are multiplicative
                       if (!(name in ref)) {ref[name] = 1}
                       ref[name] += self.multis[name].val;
                     } else {
-                      ref.base += self.multis[name].val;
+                      ref.base += self.multis[name].val; // unnamed multis are added together at the base level
                     }
                   } else {
-                    console.log('Multi Type does not exist! Check the perk that set it');
+                    console.log('Multi Type does not exist!');
                     console.log(self.multis[name]);
                   }
               }
-              // calculate a final multi value by multipliying all the different multis together
+              // calculate a final multi value by multipliying
+							// all the different multi groups together, including base
               var final = 1;
               Object.keys(ref).forEach(function (key) {
-                if (key == 'final') {return;}
-                final = final * ref[key];
+                if (key != 'final') {
+                	final = final * ref[key];
+								}
               });
               ref.final = final;
             });
@@ -350,6 +362,9 @@
 
         self.displayMultis = tempmultis;
       },
+			calculateBoosts() {
+
+			}
       calculateZones: function() {
         var self = this;
         //console.log('calcing zones');

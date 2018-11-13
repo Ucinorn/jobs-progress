@@ -273,11 +273,11 @@ var defaultPerks = {
      }
    },
    'Good Connections': {
-     description: "When completing quests in the City, your aptitudes are raised.",
+     description: "When completing quests in the City, your aptitudes are raised by 1.",
      cost: 10,
      check: function(self) {
       if (self.player.currentZone.area == 'City') {
-          self.multis['Good Connections'] = {type: 'apt', skill: 'all', val: 1};
+          self.multis['Good Connections'] = {type: 'apt', skill: 'all', val: 0.2};
       } else {
           delete self.multis['Good Connections']
       }
@@ -290,12 +290,12 @@ var defaultPerks = {
         if (zone in self.zones && self.zones[zone].type == 'urban') {
           var skillArray = Object.keys(self.player.skills);
           var key = skillArray[Math.floor(Math.random() * skillArray.length)];
-          self.increaseXP(key, 2  * (self.player.skills[key].level + 1));
+          self.increaseXP(key, 10);
         }
      }
    },
    'Swashbuckler': {
-     description: "Greatly all your aptitudes in zones that include a guile component",
+     description: "Greatly increase all your aptitudes in zones that include a guile component",
      cost: 25,
      check: function(self) {
         var hasGuile = false;
