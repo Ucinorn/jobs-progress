@@ -426,22 +426,6 @@
           });
       },
       quest: function(zone) {
-        if (this.player.currentZone.quests <= 0) {
-          // perform chores while there are no quests
-          // skill increase by 1, different skill for each zone type
-          switch (this.player.currentZone.type) {
-              case "urban":
-                this.increaseXP('labour', 1);
-                break;
-              case "dungeon":
-                this.increaseXP('combat', 1);
-                break;
-              case "wilderness":
-                this.increaseXP('scouting', 1);
-                break;
-          }
-          return;
-        }
         if (this.player.currentZone.finished) {
               this.completeQuest();
               return;
