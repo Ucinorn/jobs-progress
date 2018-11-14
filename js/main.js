@@ -19,9 +19,9 @@
       interval: {},
       player: getDefaultPlayer(),
       multis: {},
-      displayMultis: {},
+      finalMultis: {},
 			boosts: {},
-			displayBoosts: {},
+			finalBoosts: {},
       graveyard: [],
       prestige: {
         confirm: '',
@@ -280,6 +280,9 @@
           });
         });
 
+				// run the boosts calculation as they are used below
+        self.calculateBoosts();
+
         // check first if any multis have expired (ie. are temporary)
         Object.keys(self.multis).map(function(key, i) {
           var time = new Date();
@@ -293,6 +296,7 @@
           progress: {},
           apt: {}
         }
+
         // reset all to 1 (ie. 100% multiplier)
         Object.keys(self.player.skills).map(function(skill, i) {
           tempmultis.exp[skill] = {};
@@ -318,10 +322,9 @@
               if ('area' in self.multis[name] && self.multis[name].area != self.zones[zonename].area) {
                 return;
               }
-							// set up a
               var ref = tempmultis[self.multis[name].type][skillname][zonename];
               if (self.multis[name].skill == skillname || self.multis[name].skill == 'all') {
-								else if (self.multis[name].type in tempmultis) {
+								 if (self.multis[name].type in tempmultis) {
                     if (name in self.multis[name]) { // any named multis are multiplicative
                       if (!(name in ref)) {ref[name] = 1}
                       ref[name] += self.multis[name].val;
@@ -351,18 +354,49 @@
            // we calculate the per-zone aptitude value here to add its multiplier to the progress and exp as a multiplicative multi
            // the apititudes used for display are later on.
             var apt = self.jobs[self.player.job].defaultAptitudes[skill] * tempmultis.apt[skill][zone].final;
-            // do exp multis times the aptitude modifier
+						apt =+ Number(apt + self.finalBoosts.apt).toFixed(2);
+            // do exp multis including aptitude modifier
             self.player.skills[skill].multi = Number(tempmultis.exp[skill][zone].final * apt).toFixed(2);
-            // do progress multis times the aptitude modifier
+            // do progress multis including aptitude modifier
             self.zones[zone].multis[skill] = Number(tempmultis.progress[skill][zone].final * apt).toFixed(2);
           });
           // may as well set the aptitudes for display while we are here.
-           self.jobs[self.player.job].aptitudes[skill] = Number(self.jobs[self.player.job].defaultAptitudes[skill] * tempmultis.apt[skill][self.player.zone].final).toFixed(2);
+           var currentZoneApt = self.jobs[self.player.job].defaultAptitudes[skill] * tempmultis.apt[skill][self.player.zone].final;
+					 currentZoneApt = Number(currentZoneApt + self.finalBoosts.apt).toFixed(2);
+					 self.jobs[self.player.job].aptitudes[skill] = currentZoneApt;
         });
 
-        self.displayMultis = tempmultis;
+        self.finalMultis = tempmultis;
       },
 			calculateBoosts() {
+				var self = this;
+				var boosts = {
+					exp: 0,
+					progress: 0,
+					apt: 0
+				}
+
+				Object.keys(self.boosts).map(function(key, i) {
+					var time = new Date();
+					if (self.boosts[key].expiry > 0 && self.boosts[key].expiry < time.getTime()) {
+						delete self.boosts[key];
+					}
+				});
+
+				Object.keys(self.boosts).map(function(name, i) {
+					Object.keys(self.zones).map(function(zonename, z) {
+						Object.keys(self.player.skills).map(function(skillname, s) {
+							if ('zone' in self.boosts[name] && self.boosts[name].zone != zonename) { return; }
+							if ('area' in self.boosts[name] && self.boosts[name].area != self.zones[zonename].area) { return; }
+							if (self.boosts[name].skill == skillname || self.boosts[name].skill == 'all') {
+								if (self.boosts[name].type in boosts) {
+									boosts[self.boosts[name].type] =+ self.boosts[name].val
+								}
+							}
+						})
+					})
+				})
+				self.finalBoosts = boosts;
 
 			}
       calculateZones: function() {
@@ -396,7 +430,7 @@
       calculateRates: function() {
         var self = this;
         Object.keys(self.zones).map(function(zonename, index) {
-          // loop through zones, setting increase rates for each.
+          // loop through zones, setting progress rates for each.
           var total = 0;
           Object.keys(self.zones[zonename].skills).map(function(skill, index) {
             // calculate progress based on player skill
@@ -405,6 +439,9 @@
             if (self.zones[zonename].multis[skill] > 1) {
               amount = amount * self.zones[zonename].multis[skill];
             }
+						// add any static boosts AFTER multiplier
+						// TODO maybe split boosts into pre and post multi
+						amount =+ self.finalBoosts.progress;
             // set the rate per zone for display
             self.zones[zonename].rates[skill] = Number((amount).toFixed(2));
             // minus the skill value for the zone. This can result in negative progress
@@ -416,13 +453,16 @@
         })
         // set the EXP rate of the current zone while we are here
           Object.keys(self.player.skills).map(function(key, index) {
+						var exprate = 0
             if (key in self.player.currentZone.skills) {
               var baseIncrease = self.player.currentZone.skills[key] + 10;
               var increase = Math.round((baseIncrease * (1 + (self.player.currentZone.difficulty[key])) / 2));
               self.player.skills[key].rate = increase;
-            } else {
-              self.player.skills[key].rate = 0;
             }
+						// add any static boosts AFTER multiplier
+						// TODO maybe split boosts into pre and post multi
+						exprate =+ Math.floor(self.finalBoosts.exp);
+            self.player.skills[key].rate = exprate;
           });
       },
       quest: function(zone) {
