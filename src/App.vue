@@ -21,26 +21,6 @@ export default {
   },
   watch: {
     'player': (p) => { console.log('self.player changed', p) },
-    'player.job': function () {
-      console.log('changing job via watcher');
-      var self = this;
-      if (this.player.job in this.jobs) {
-        this.player.currentJob = this.jobs[this.player.job];
-        // reset perks and build them again from scratch
-        this.player.perks = {};
-        this.player.currentJob.perks.forEach(function (perk) {
-          console.log('setting perk from job');
-          self.setPerk(perk);
-        });
-        // loop through bought upgrades to add them to your perks list
-        // relies on perk upgrades being generated entirely by code
-        this.applyBought();
-        this.checkPerks();
-      } else {
-        console.log('could not find job: ' + this.player.job)
-        this.setDefaultPlayer()
-      }
-    },
     'player.zone': function () {
       console.log('setting zone via watcher');
       if (this.player.zone in this.zones) {
@@ -668,18 +648,19 @@ export default {
     },
     reincarnate(newjob) {
       this.endLoop();
-      var newRet = {
-        name: this.player.name,
-        level: this.player.level,
-        skills: {},
-        zone: this.player.zone,
-        job: this.player.job,
-      };
-      var self = this;
-      Object.keys(this.player.skills).map(function (skillname, i) {
-        newRet.skills[skillname] = self.player.skills[skillname].level;
-      });
-      this.graveyard.push(newRet)
+      if (this.player?.job) {
+        var grave = {
+          name: this.player.name,
+          level: this.player.level,
+          skills: {},
+          zone: this.player.zone,
+          job: this.player.job,
+        };
+        for (let skillname in this.player.skills) {
+          grave.skills[skillname] = this.player.skills[skillname].level;
+        };
+        this.graveyard.push(grave)
+      }
       this.calculatePrestige();
       this.calculateRates();
       this.stats.totalRetirements++;
@@ -699,10 +680,27 @@ export default {
       this.endLoop();
       localStorage.removeItem('player_save');
       this.setDefaultPlayer();
-      this.multis = {},
-        // sprinkle stuff into the new player data
+      this.multis = {}
+      // sprinkle stuff into the new player data
+      if ( job in this.jobs) {
         console.log('setting job to: ' + job);
-      this.player.job = job;
+        this.player.job = job;
+        this.player.currentJob = this.jobs[this.player.job];
+        // reset perks and build them again from scratch
+        this.player.perks = {};
+        this.player.currentJob.perks.forEach(function (perk) {
+          console.log('setting perk from job');
+          self.setPerk(perk);
+        });
+        // loop through bought upgrades to add them to your perks list
+        // relies on perk upgrades being generated entirely by code
+        this.applyBought();
+        this.checkPerks();
+      } else {
+        console.log('could not find job: ' + this.player.job)
+        this.setDefaultPlayer()
+      }
+
       this.player.zone = 'Inn';
       Object.assign(this.player.skills, newData.skills);
       this.view = 'world';
