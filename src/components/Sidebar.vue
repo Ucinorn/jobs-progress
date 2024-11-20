@@ -1,5 +1,13 @@
 <script setup>
+import store from '../js/store'
+import { toRef } from 'vue'
 
+const player = toRef(store, 'player')
+const multis = toRef(store, 'multis')
+const jobs = toRef(store, 'jobs')
+const perks = toRef(store, 'perks')
+
+console.log('multis', multis)
 </script>
 
 <template>
@@ -20,8 +28,10 @@
           <div class="row no-gutters align-items-center tool statline" v-for="(skill, name, index) in player.skills" v-bind:class="{ current: skill.rate > 0 }">
             <div class="tooltiptext">
               <div><strong>APT:   {{Number(player.currentJob.defaultAptitudes[name]).toFixed(2)}} + {{Number(player.currentJob.aptitudes[name] - player.currentJob.defaultAptitudes[name]).toFixed(2)}} </strong> </div>
-              <div v-for="(multi, multiname, index) in multis" v-if="multi.type == 'apt' && multi.skill == name"> {{multiname}}: {{Math.round(multi.val * 100)}}%</div>
-              <div v-for="(multi, multiname, index) in multis" v-if="multi.type == 'apt' && multi.skill == 'all'"> {{multiname}}: {{Math.round(multi.val * 100)}}%</div>
+              <template v-for="(multi, multiname, index) in multis">
+                <div v-if="multi.type == 'apt' && multi.skill == name"> {{multiname}}: {{Math.round(multi.val * 100)}}%</div>
+                <div v-if="multi.type == 'apt' && multi.skill == 'all'"> {{multiname}}: {{Math.round(multi.val * 100)}}%</div>
+              </template>
               <div><strong>Total: {{Math.round(player.currentJob.multis[name] * 100)}}%</strong></div>
               <hr>
               <div><strong>EXP:  {{skill.exp}} / {{skill.next}} </strong> </div>

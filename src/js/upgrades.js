@@ -1,14 +1,4 @@
 var upgrades = {
-  'Wanderlust': {
-    description: "Enable the option to move on to other areas once the average difficulty is less than 50%",
-    type: "general",
-    persistent: true,
-    cost: 10,
-    unlocked: false,
-    effect: function (self) {
-      self.config.wanderlust = true;
-    }
-  },
   'Follow the Mirage': {
     description: "Unlock the Mirage Palace zone.",
     type: "general",
@@ -16,7 +6,7 @@ var upgrades = {
     cost: 1,
     unlocked: false,
     check: function (self) {
-      return (self.player.area == 'desert' && Math.Random() > 0.95);
+      return (self.player.area == 'desert' && Math.Random() > 0.99);
     },
   },
   'Reincarnator': {

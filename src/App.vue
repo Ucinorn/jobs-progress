@@ -8,6 +8,10 @@ export default {
   created: function () {
     // calculate initial zone totals
     this.calculateZones();
+    // scaffold the stats object
+    this.buildStats();
+    // set the default player
+    this.setDefaultPlayer()
     // load the game state from localStorage
     this.load();
     // set the rates and display numbers for the game
@@ -70,15 +74,20 @@ export default {
       this.calculatePrestige();
     }
   },
+  computed: {
+    isPlaying() {
+      return this.player.currentZone?.name;
+    }
+  },
   methods: {
     setDefaultPlayer() {
       let newPlayer = {
         name: "",
-        job: "spirit",
+        job: "",
         currentJob: {},
-        zone: "limbo",
+        zone: "",
         currentZone: {},
-        area: "limbo",
+        area: "",
         level: 1,
         exp: 0,
         next: 5,
@@ -97,7 +106,7 @@ export default {
           divinity: { level: 1, exp: 0, multi: 1, next: 10, progress: 0, rate: 0 },
         },
       }
-      this.player = Object.assign({}, newPlayer)
+      this.player = { ...newPlayer }
     },
     buy(name) {
       if (!(name in this.upgrades)) {
@@ -233,16 +242,17 @@ export default {
       this.$forceUpdate();
     },
     calculateMultis: function () {
-      // multis look like this
+
+      // produce an object of multipliers, keyed by the 
       /*
       { 
-        type: 'apt', 
-        skill: 'all', 
+        type: 'apt or none', 
         val: 0.2, 
-        area:'areaname', 
-        zone:'zonename', 
+        area:'areaname or all', 
+        zone:'zonename or all', 
+        skill: 'all', 
         name:'someidentifier', 
-        time: "", 
+        expiry: "", 
         boost: false
       }
       */
@@ -253,35 +263,26 @@ export default {
       // unnamed mutlis will be added together in a 'base' name, 
       // while every named multi will be added together to form an additive multi
       // then all the different groups are multiplied togetehr to get a final multi
+      
+      const self = this;
+      const { zones, player, player: { skills }, multis } = self
+      console.log('calculating multis' );
 
-      console.log('calculating multis');
-
-      var self = this;
-      // start with the difficulty multiplier for all skills in all zones. This effects the total EXP you receive
-      // This is a master multiplier applied after other multis.
-      Object.keys(self.zones).map(function (zone, i) {
-        Object.keys(self.zones[zone].skills).map(function (skill, j) {
-          self.zones[zone].difficulty[skill] = Number((self.zones[zone].skills[skill] / (self.player.skills[skill].level + 1)).toFixed(3));
-        });
-      });
-
-      // run the boosts calculation as they are used below
-      self.calculateBoosts();
-
-      // check first if any multis have expired (ie. are temporary)
+           // check first if any multis have expired (ie. are temporary)
       Object.keys(self.multis).map(function (key, i) {
         var time = new Date();
         if (self.multis[key].expiry > 0 && self.multis[key].expiry < time.getTime()) {
           delete self.multis[key];
         }
       });
-      // loop through multi array, assigning any multis found to their appropriate location
-      var tempmultis = {
+
+      // we need to pre-calculate multis based on the multi array
+      // into one multi value for each zone and skill
+      const tempmultis = {
         exp: {},
         progress: {},
         apt: {}
       }
-
       // reset all to 1 (ie. 100% multiplier)
       Object.keys(self.player.skills).map(function (skill, i) {
         tempmultis.exp[skill] = {};
@@ -298,61 +299,92 @@ export default {
       // the behaviour of multis is as follows:
       // all multis are assigned
 
-      Object.keys(self.multis).map(function (name, i) {
-        Object.keys(self.zones).map(function (zonename, z) {
-          Object.keys(self.player.skills).map(function (skillname, s) {
+      const calculateFinal = (multi) => {
+        let { base, final, ...rest } = multi;
+        final = base || 1;
+        for ( const key in rest ) {
+          final *= rest[key];
+        }
+        return final;
+      }
+
+      Object.keys(multis).map(function (multiname, i) {
+        const multi = multis[multiname];
+        Object.keys(zones).map(function (zonename, z) {
+          const zone = zones[zonename];
+          Object.keys(skills).map(function (skillname, s) {
+            const skill = skills[skillname];
+
             // if a zone or area is explicitly set, validate for it here
-            if ('zone' in self.multis[name] && self.multis[name].zone != zonename) {
+            if ('zone' in multi && multi.zone != zonename) {
               return;
             }
-            if ('area' in self.multis[name] && self.multis[name].area != self.zones[zonename].area) {
+            if ('area' in multi && multi.area != zone.area) {
               return;
             }
-            var ref = tempmultis[self.multis[name].type][skillname][zonename];
-            if (self.multis[name].skill == skillname || self.multis[name].skill == 'all') {
-              if (self.multis[name].type in tempmultis) {
-                if (name in self.multis[name]) { // any named multis are multiplicative
-                  if (!(name in ref)) { ref[name] = 1 }
-                  ref[name] += self.multis[name].val;
-                } else {
-                  ref.base += self.multis[name].val; // unnamed multis are added together at the base level
-                }
-              } else {
-                console.log('Multi Type does not exist!');
-                console.log(self.multis[name]);
-              }
+            if ('locale' in multi && multi.locale != zone.locale) {
+              return;
             }
-            // calculate a final multi value by multipliying
-            // all the different multi groups together, including base
-            var final = 1;
-            Object.keys(ref).forEach(function (key) {
-              if (key != 'final') {
-                final = final * ref[key];
+            if ('skill' in multi && multi.skill != skillname && multi.skill != 'all') {
+              return;
+            }
+            // this is a direct reference to the temp multi object
+            // its what lets us modify the top level multi values
+            var ref = tempmultis?.[multi.type]?.[skillname]?.[zonename];
+            
+            if (!ref) {
+              console.log('Multi Type does not exist!');
+              console.log(self.multis[multiname]);
+              return;
+            }
+
+            // any named multis are multiplicative
+            // which means they are are added as their own value in the ref object
+            // we also need to check if the name is already in the object, and if not, set it to 1.
+            if ('name' in multi) { 
+              if (!(multi.name in ref)) { 
+                ref[multiname] = 1 
               }
-            });
-            ref.final = final;
+              ref[multiname] += multi.val;
+            } else {
+              // unnamed multis are added to the existing base
+              ref.base += multi.val; 
+            }
           });
         });
       });
-      // map all multis to their respective locations
-      Object.keys(self.player.skills).map(function (skill, i) {
-        Object.keys(self.zones).map(function (zone, j) {
-          // we calculate the per-zone aptitude value here to add its multiplier to the progress and exp as a multiplicative multi
-          // the apititudes used for display are later on.
-          var apt = self.jobs[self.player.job].defaultAptitudes[skill] * tempmultis.apt[skill][zone].final;
-          apt = + Number(apt + self.finalBoosts.apt).toFixed(2);
-          // do exp multis including aptitude modifier
-          self.player.skills[skill].multi = Number(tempmultis.exp[skill][zone].final * apt).toFixed(2);
-          // do progress multis including aptitude modifier
-          self.zones[zone].multis[skill] = Number(tempmultis.progress[skill][zone].final * apt).toFixed(2);
-        });
-        // may as well set the aptitudes for display while we are here.
-        var currentZoneApt = self.jobs[self.player.job].defaultAptitudes[skill] * tempmultis.apt[skill][self.player.zone].final;
-        currentZoneApt = Number(currentZoneApt + self.finalBoosts.apt).toFixed(2);
-        self.jobs[self.player.job].aptitudes[skill] = currentZoneApt;
-      });
+      
+      // next we need to apply aptitude multipliers to the final values
+      // we need to do it here, becasue we just calculated all the aptitude multis above
+      Object.keys(zones).map(function (zonename, z) {
+        Object.keys(skills).map(function (skillname, s) {
 
+          // first we calculate the aptitude multi final, which is based on the calculations above
+          const aptMultiObject = tempmultis.apt[skillname][zonename]
+          aptMultiObject.final = calculateFinal(aptMultiObject);
+          // then we turn around and apply it to the progress and exp multi
+          const baseApt = self.jobs[self.player.job].defaultAptitudes?.[skillname] || 1
+          const aptMulti = aptMultiObject.final * baseApt;
+          tempmultis.progress[skillname][zonename]['aptitude'] = aptMulti;
+          tempmultis.exp[skillname][zonename]['aptitude'] = aptMulti;
+        });
+      });
+     
+      // amost there: now we need to calculate the final values for each remaining multi type
+      // this is because we just added the aptitude multi values above
+      Object.keys(zones).map(function (zonename, z) {
+        Object.keys(player.skills).map(function (skillname, s) {
+          tempmultis.exp[skillname][zonename].final = calculateFinal(tempmultis.exp[skillname][zonename]);
+          tempmultis.progress[skillname][zonename].final = calculateFinal(tempmultis.progress[skillname][zonename]);
+        });
+      });
+      
+      // aaand finally we apply the final values to the reactive multis object
+      // this should update everything that needs updating
       self.finalMultis = tempmultis;
+    },
+    getMulti(zone, skill, type) {
+      return this.finalMultis?.[type]?.[skill]?.[zone]?.final || 1;
     },
     calculateBoosts() {
       var self = this;
@@ -383,7 +415,6 @@ export default {
         })
       })
       self.finalBoosts = boosts;
-
     },
     calculateZones: function () {
       var self = this;
@@ -399,22 +430,12 @@ export default {
         //console.log('max is: ' + total);
       });
     },
-    calculateQuests: function () {
-      var self = this;
-      //console.log('calcing quest counts');
-      Object.keys(self.zones).map(function (key, index) {
-        if (self.zones[key].questCountdown <= 0) {
-          if (self.zones[key].quests < self.zones[key].maxQuests) {
-            self.zones[key].quests++;
-            self.zones[key].questCountdown = self.zones[key].questCountdownDefault;
-          }
-        } else {
-          self.zones[key].questCountdown--;
-        }
-      });
-    },
     calculateRates: function () {
       var self = this;
+      if (!self?.player?.currentZone) {
+        console.log('No current zone found, skipping rate calculation');
+        return;
+      }
       Object.keys(self.zones).map(function (zonename, index) {
         // loop through zones, setting progress rates for each.
         var total = 0;
@@ -422,12 +443,10 @@ export default {
           // calculate progress based on player skill
           var amount = self.player.skills[skill].level + 1;
           // multiply the result by the total progress multiplier
-          if (self.zones[zonename].multis[skill] > 1) {
-            amount = amount * self.zones[zonename].multis[skill];
+          let progressMulti = self.getMulti(zonename, skill, 'progress');
+          if ( typeof progressMulti != 'undefined') {
+            amount = amount * progressMulti;
           }
-          // add any static boosts AFTER multiplier
-          // TODO maybe split boosts into pre and post multi
-          amount = + self.finalBoosts.progress;
           // set the rate per zone for display
           self.zones[zonename].rates[skill] = Number((amount).toFixed(2));
           // minus the skill value for the zone. This can result in negative progress
@@ -440,9 +459,12 @@ export default {
       // set the EXP rate of the current zone while we are here
       Object.keys(self.player.skills).map(function (key, index) {
         var exprate = 0
-        if (key in self.player.currentZone.skills) {
-          var baseIncrease = self.player.currentZone.skills[key] + 10;
-          var increase = Math.round((baseIncrease * (1 + (self.player.currentZone.difficulty[key])) / 2));
+        const currentZone = self.player.currentZone;
+        const currentZoneSkill = currentZone?.skills?.[key];
+        if (currentZoneSkill) {
+          var baseIncrease = currentZoneSkill + 10;
+          let expMulti = self.getMulti(currentZone.name, key, 'exp');
+          let increase = baseIncrease * expMulti;
           self.player.skills[key].rate = increase;
         }
         // add any static boosts AFTER multiplier
@@ -457,7 +479,7 @@ export default {
         return;
       }
       // get the total increase from the rate;
-      var total = this.player.currentZone.rates.total;
+      var total = this.player.currentZone?.rates?.total || 0;
       // progress must always be at least 1. if not, just return and nothing happens.
       if (total < 1) {
         total = 0;
@@ -594,7 +616,6 @@ export default {
       if (this.player.zone.length > 0) {
         this.quest();
       }
-      this.calculateQuests();
       this.checkPerks();
     },
     endLoop: function () {
@@ -629,8 +650,7 @@ export default {
         Object.assign(this.stats, JSON.parse(localStorage.getItem('jobs_stats_save')));
         console.log('stats data loaded from localstorage');
       }
-      // set up the stats object based on the existing zones, jobs and player
-      this.buildStats();
+
       if (localStorage.getItem('jobs_upgrade_save') != null) {
         this.calculatePrestige();
         var savedbought = JSON.parse(localStorage.getItem('jobs_upgrade_save'));
@@ -668,6 +688,7 @@ export default {
     reset: function (job) {
       console.log('resetting to job:', job)
       this.prestige.confirm = '';
+      this.resetStats();
       if (typeof job == 'undefined') {
         job = this.player.job;
         if (!(job in this.jobs)) {
@@ -693,7 +714,7 @@ export default {
       console.log(this.$data);
     },
     generateIcon: function (key, size, diff) {
-      if (!(key in this.icons)) {
+      if (!(key in store.icons)) {
         return;
       }
       var color = "";
@@ -791,6 +812,7 @@ export default {
 import Sidebar from './components/Sidebar.vue'
 import Main from './components/Main.vue'
 import Footer from './components/Footer.vue'
+import SelectJob from './components/SelectJob.vue'
 </script>
 
 <template>
@@ -809,10 +831,16 @@ import Footer from './components/Footer.vue'
         </button>
       </div>
     </div>
-    <div class="row" v-else>
-      <Sidebar />
-      <Main />
-      <Footer />
+    <div v-else>
+
+      <div class="row" v-if="isPlaying">
+        <Sidebar />
+        <Main />
+        <Footer />
+      </div>
+      <div v-else>
+        <SelectJob @selectJob="( job , $event ) => reincarnate(job)"/>
+      </div>
     </div>
   </div>
 </template>

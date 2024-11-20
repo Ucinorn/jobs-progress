@@ -1,53 +1,48 @@
-var zones = {
-  'Limbo': {},
-  'Inn': {
-    area: 'Village',
-    type: 'urban',
-    unlocked: true,
+const zones = {
+  "Traveler's Inn": {
+    area: 'Coast',
+    locale: 'urban',
     skills: {
-      'labour': 1
+      'labour': 1,
+      'herbalism': 2,
     }
   },
   'Wheat Fields': {
-    area: 'Village',
-    type: 'urban',
-    unlocked: true,
+    area: 'Coast',
+    locale: 'urban',
     skills: {
-      'labour': 1,
-      'herbalism': 3,
+      'labour': 3,
     }
   },
   'Nearby Woods': {
-    area: 'Village',
-    type: 'wilderness',
-    unlocked: true,
+    area: 'Coast',
+    locale: 'wilderness',
     skills: {
-      'combat': 3,
+      'combat': 1,
+      'scouting': 3,
+    }
+  },
+  'Swamp': {
+    area: 'Coast',
+    locale: 'wilderness',
+    skills: {
       'scouting': 1,
+      'herbalism': 4,
     }
   },
   'Town Square': {
-    area: 'Village',
-    type: 'urban',
-    unlocked: true,
+    area: 'Coast',
+    locale: 'urban',
     skills: {
       'diplomacy': 1,
       'guile': 2,
-    }
-  },
-  'Small Shrine': {
-    area: 'Village',
-    type: 'urban',
-    unlocked: true,
-    skills: {
-      'divinity': 1,
-      'labour': 5,
+      'labour': 1,
     }
   },
   'Druid Grove': {
-    area: 'Village',
-    type: 'wilderness',
-    unlocked: false,
+    area: 'Coast',
+    locale: 'wilderness',
+    locked: true,
     hint: 'The druids keep the location of their home a close secret.',
     check: function (self) {
       return self.jobs.druid.unlocked;
@@ -58,10 +53,52 @@ var zones = {
       'diplomacy': 3,
     }
   },
+  'Quiet Forest': {
+    area: 'Steppes',
+    locale: 'wilderness',
+    skills: {
+      'scouting': 2,
+      'herbalism': 2,
+      'whiteMagic': 1,
+    }
+  },
+  'Hillside Caves': {
+    area: 'Steppes',
+    locale: 'dungeon',
+    skills: {
+      'combat': 3,
+      'scouting': 1,
+      'guile': 2,
+    }
+  },
+  'Small Shrine': {
+    area: 'Steppes',
+    locale: 'urban',
+    skills: {
+      'divinity': 1,
+      'labour': 4,
+      'diplomacy': 2,
+    }
+  },
+  'Mining Camp': {
+    area: 'Steppes',
+    locale: 'urban',
+    skills: {
+      'labour': 5,
+    }
+  },
+  'Wide Tundra': {
+    area: 'Steppes',
+    locale: 'wilderness',
+    skills: {
+      'scouting': 2,
+      'archery': 4,
+    }
+  },
   'Lightning Rock': {
-    area: 'Village',
-    type: 'dungeon',
-    unlocked: false,
+    area: 'Steppes',
+    locale: 'dungeon',
+    locked: true,
     hint: 'Trained mages can find sources of magic that the common folk miss.',
     unlock: 'Retire a character with Black Magic skill higher than 15',
     check: function (self) {
@@ -76,38 +113,56 @@ var zones = {
       'archery': 4,
       'guile': 3,
     }
-  },
-  'Main Road': {
+  }, 
+  // start great plains
+  'Trading Post': {
     area: 'Great Plains',
-    type: 'urban',
-    unlocked: true,
+    locale: 'urban',
+    skills: {
+      'diplomacy': 1,
+      'guile': 1,
+      'herbalism': 1,
+      'labour': 1,
+      'archery': 1,
+    }
+  },
+  'Rolling Hills': {
+    area: 'Great Plains',
+    locale: 'wilderness',
     skills: {
       'labour': 3,
-      'scouting': 8,
+      'scouting': 1,
     }
   },
   'Savannah': {
     area: 'Great Plains',
-    type: 'wilderness',
-    unlocked: true,
+    locale: 'wilderness',
     skills: {
-      'scouting': 5,
-      'archery': 7,
+      'scouting': 2,
+      'archery': 3,
+    }
+  },
+  'Obelisk': {
+    area: 'Great Plains',
+    locale: 'wilderness',
+    skills: {
+      'divinity': 1,
+      'blackMagic': 4,
     }
   },
   'Abandoned Caves': {
     area: 'Great Plains',
-    type: 'dungeon',
-    unlocked: true,
+    locale: 'dungeon',
     skills: {
-      'combat': 5,
-      'herbalism': 10,
+      'combat': 4,
+      'herbalism': 1,
+      'scouting': 2,
     }
   },
   'Ancient Ruins': {
     area: 'Great Plains',
-    type: 'dungeon',
-    unlocked: true,
+    locale: 'dungeon',
+
     skills: {
       'whiteMagic': 10,
       'blackMagic': 5,
@@ -116,68 +171,70 @@ var zones = {
   },
   'Barbarian Camp': {
     area: 'Great Plains',
-    type: 'urban',
-    unlocked: false,
+    locale: 'urban',
+    locked: true,
     hint: 'The barbarian horde roams ceaselessly across the plains, but are difficult to find; trespass in their lands and eventually find you.',
     unlock: 'Complete Over 100 quests in the Great Plains Area',
     check: function (self) {
       return (self.stats.areas['Great Plains'].completions > 100);
     },
     skills: {
-      'diplomacy': 10,
-      'guile': 15,
-      'combat': 8,
+      'diplomacy': 4,
+      'guile': 1,
+      'combat': 3,
     }
   },
   'World Tree': {
     area: 'Great Plains',
-    type: 'wilderness',
-    unlocked: false,
+    locale: 'wilderness',
+    locked: true,
     hint: 'The world tree is a symbol and sanctuary of all races, creeds and religions. All spirits reside there in time.',
     unlock: 'Retire at least 10 characters to the Hall of Heroes',
     check: function (self) {
       return (self.graveyard.length > 9);
     },
     skills: {
-      'blackMagic': 12,
-      'divinity': 15,
-      'herbalism': 7,
-      'whiteMagic': 5,
-      'diplomacy': 10,
+      'blackMagic': 3,
+      'divinity': 4,
+      'herbalism': 1,
+      'whiteMagic': 2,
+      'diplomacy': 3,
     }
   },
-  'Training Yard': {
+  // start city
+  'Guild Hall': {
     area: 'City',
-    type: 'urban',
-    unlocked: true,
+    locale: 'urban',
+
     skills: {
-      'combat': 10,
+      'guile': 1,
+      'diplomacy': 1,
+      'labour': 4,
     }
   },
   'Marketplace': {
     area: 'City',
-    type: 'urban',
-    unlocked: true,
+    locale: 'urban',
+
     skills: {
-      'guile': 7,
-      'diplomacy': 7,
-      'herbalism': 5,
+      'guile': 2,
+      'diplomacy': 2,
+      'herbalism': 1,
     }
   },
   'Docks': {
     area: 'City',
-    type: 'urban',
-    unlocked: true,
+    locale: 'urban',
     skills: {
-      'guile': 20,
-      'labour': 10,
-      'combat': 7,
+      'guile': 5,
+      'labour': 4,
+      'combat': 1,
     }
   },
   'Temple Quarter': {
     area: 'City',
-    type: 'urban',
-    unlocked: false,
+    locale: 'urban',
+    locked: true,
     hint: 'You must prove your divinity before being allowed free passage through the temple district.',
     unlock: 'Either have or  a character with at least level 20 in divinity',
     check: function (self) {
@@ -193,14 +250,14 @@ var zones = {
 
     },
     skills: {
-      'divinity': 20,
-      'diplomacy': 10,
+      'divinity': 5,
+      'diplomacy': 3,
     }
   },
   'Sewers': {
     area: 'City',
-    type: 'dungeon',
-    unlocked: false,
+    locale: 'dungeon',
+    locked: true,
     hint: 'The sewers beneath the city contain endless tunnels full of hidden secrets, drawing cuthroats and adventurers in equal measure.',
     unlock: 'Retire an Adventurer or Thief character to the Hall of Heroes',
     check: function (self) {
@@ -211,106 +268,122 @@ var zones = {
       });
     },
     skills: {
-      'scouting': 15,
-      'whiteMagic': 15,
-      'herbalism': 10,
-      'combat': 20,
+      'scouting': 4,
+      'whiteMagic': 3,
+      'herbalism': 1,
+      'combat': 2,
     }
   },
+  // start mountains
   'High Pass': {
     area: 'Mountains',
-    type: 'wilderness',
-    unlocked: true,
+    locale: 'wilderness',
     skills: {
-      'labour': 20,
-      'scouting': 35,
+      'labour': 4,
+      'scouting': 4,
+    }
+  },
+  'Monastery': {
+    area: 'Mountains',
+    locale: 'wilderness',
+    skills: {
+      'divinity': 4,
+      'whiteMagic': 2,
+      'blackMagic': 2,
     }
   },
   'Orc Camp': {
     area: 'Mountains',
-    type: 'dungeon',
-    unlocked: true,
+    locale: 'urban',
     skills: {
-      'combat': 45,
-      'diplomacy': 20,
+      'combat': 5,
+      'diplomacy': 2,
+      'archery': 2,
     }
   },
   'Spider Tunnels': {
     area: 'Mountains',
-    type: 'dungeon',
-    unlocked: true,
+    locale: 'dungeon',
+
     skills: {
       'scouting': 40,
       'herbalism': 40,
       'blackMagic': 15,
     }
   },
-  'Hidden City': {
+  'Hidden Dwaven Enclave': {
     area: 'Mountains',
-    type: 'urban',
-    unlocked: false,
+    locale: 'urban',
+    locked: true,
     hint: 'The deep dwarves are untrustworthy of strangers, but respect great warriors. Prove yourself against their enemies, and the mead shall flow',
     unlock: 'Complete over 20 quests in the Orc Camp',
     check: function (self) {
       return (self.stats.zones['Orc Camp'].completions > 20);
     },
     skills: {
-      'combat': 40,
-      'diplomacy': 25,
-      'labour': 30,
-      'guile': 25,
+      'diplomacy': 5,
+      'combat': 4,
+      'guile': 3,
+      'labour': 1,
     }
   },
   'Frozen Temple': {
     area: 'Mountains',
-    type: 'wilderness',
-    unlocked: true,
+    locale: 'wilderness',
     skills: {
-      'blackMagic': 30,
-      'whiteMagic': 30,
-      'divinity': 50,
+      'archery': 4,
+      'blackMagic': 3,
+      'divinity': 1,
     }
   },
+  // start desert
   'Walled Camp': {
     area: 'Desert',
-    type: 'urban',
-    unlocked: true,
+    locale: 'urban',
     skills: {
-      'diplomacy': 50,
-      'guile': 70,
+      'guile': 3,
+      'diplomacy': 2,
+      'whiteMagic': 1,
     }
   },
   'Endless Sands': {
     area: 'Desert',
-    type: 'wilderness',
-    unlocked: true,
+    locale: 'wilderness',
     skills: {
-      'scouting': 50,
-      'whiteMagic': 50,
-      'archery': 85,
+      'scouting': 5,
+      'whiteMagic': 1,
+      'herbalism': 2,
+      'archery': 2,
     }
   },
   'Sandworm Lair': {
     area: 'Desert',
-    type: 'dungeon',
-    unlocked: true,
+    locale: 'dungeon',
     skills: {
-      'combat': 100,
-      'archery': 35,
+      'combat': 4,
+      'archery': 5,
     }
   },
   'Oasis': {
     area: 'Desert',
-    type: 'wilderness',
-    unlocked: true,
+    locale: 'wilderness',
     skills: {
-      'herbalism': 90,
+      'herbalism': 4,
+      'diplomacy': 2,
+    }
+  },
+  'Ziggurat': {
+    area: 'Desert',
+    locale: 'dungeon',
+    skills: {
+      'blackMagic': 1,
+      'scouting': 3,
     }
   },
   'Mirage Palace': {
     area: 'Desert',
-    type: 'dungeon',
-    unlocked: false,
+    locale: 'dungeon',
+    locked: true,
     hint: 'Wander the desert long enough and the Mirage Palace will present itself',
     unlock: 'Each time you complete a quest in the desert are, there is a 5% chance to unlock the Follow the Mirage quest ',
     check: function (self) {
@@ -324,53 +397,68 @@ var zones = {
   },
   'Border Keep': {
     area: 'Wildlands',
-    type: 'urban',
-    unlocked: true,
+    locale: 'urban',
     skills: {
-      'whiteMagic': 45,
-      'blackMagic': 45,
-      'scouting': 100,
+      'whiteMagic': 1,
+      'blackMagic': 4,
+      'scouting': 2,
     }
   },
   'Blasted Wasteland': {
     area: 'Wildlands',
-    type: 'wilderness',
-    unlocked: true,
+    locale: 'wilderness',
     skills: {
-      'combat': 45,
-      'archery': 100,
-      'scouting': 30,
+      'combat': 3,
+      'archery': 5,
+      'scouting': 1,
     }
   },
-  'The Chasm': {
+  'Whistling Ravine': {
     area: 'Wildlands',
-    type: 'wilderness',
-    unlocked: true,
+    locale: 'wilderness',
     skills: {
-      'archery': 40,
-      'labour': 75,
+      'archery': 1,
+      'labour': 4,
     }
   },
-  'Cannibal Forest': {
+  'Wretched Forest': {
     area: 'Wildlands',
-    type: 'dungeon',
-    unlocked: true,
+    locale: 'wilderness',
     skills: {
-      'herbalism': 45,
-      'diplomacy': 45,
-      'guile': 90,
+      'herbalism': 4,
+      'diplomacy': 1,
+      'guile': 5,
     }
   },
   'Cursed Battlefeild': {
     area: 'Wildlands',
-    type: 'dungeon',
-    unlocked: true,
+    locale: 'wilderness',
     skills: {
-      'combat': 120,
-      'divinity': 120,
-      'whiteMagic': 45,
+      'combat': 1,
+      'divinity': 5,
+      'whiteMagic': 4,
     }
   },
+  'Obsidian Fields': {
+    area: 'Wildlands',
+    locale: 'wilderness',
+    skills: {
+      'labour': 2,
+      'guile': 2,
+      'whiteMagic': 3,
+    }
+  },
+  'The Hole': {
+    area: 'Wildlands',
+    locale: 'dungeon',
+    skills: {
+      'combat': 5,
+      'scouting': 4,
+      'whiteMagic': 3,
+      'guile': 2,
+      'labour': 1,
+    }
+  }
 
 
 };
@@ -386,18 +474,12 @@ Object.keys(zones).map(function (key, index) {
     zones[key].skills = {}
   }
   zones[key].level = 1;
-  zones[key].questCountdown = 0;
-  if (!('maxQuests' in zones[key])) { zones[key].maxQuests = 3; }
-  if (!('questCountdownDefault' in zones[key])) { zones[key].questCountdownDefault = 15; }
-  zones[key].quests = zones[key].maxQuests;
   zones[key].completeCount = 1;
   zones[key].progress = 0;
   zones[key].current = 0;
   zones[key].max = 5;
   // container for the totalled mltiplier of the skill. Effects progress
   zones[key].multis = {};
-  // continer for the calculated difficulty based on zone level and player level. Effect exp
-  zones[key].difficulty = {};
   // container for rate of progress, used in calculatiosn and shown on frontend
   zones[key].rates = {};
 });

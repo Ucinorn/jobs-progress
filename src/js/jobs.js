@@ -1,22 +1,4 @@
 var jobs = {
-  spirit: {
-    name: "Spirit",
-    description: "A ball of potential, floating in space",
-    unlocked: true,
-    aptitudes: {
-      labour: 0,
-      combat: 0,
-      archery: 0,
-      scouting: 0,
-      whiteMagic: 0,
-      blackMagic: 0,
-      herbalism: 0,
-      diplomacy: 0,
-      guile: 0,
-      divinity: 0,
-    },
-    perks: []
-  },
   peasant: {
     name: "Peasant",
     description: "A humble villager with nothing but hopes and dreams",
@@ -51,6 +33,11 @@ var jobs = {
       guile: 1,
       divinity: 1,
     },
+    unlocked: false,
+    unlock: "Retire at least 1 character to the Hall of Heroes",
+    check: function (self) {
+      return (self.graveyard.length > 0);
+    },
     perks: ['Salt of the Earth']
   },
   woodsman: {
@@ -68,6 +55,11 @@ var jobs = {
       diplomacy: 0.2,
       guile: 0.2,
       divinity: 1,
+    },
+    unlocked: false,
+    unlock: "Retire at least 1 character to the Hall of Heroes",
+    check: function (self) {
+      return (self.graveyard.length > 0);
     },
     perks: ['Forest Dweller']
   },
@@ -87,6 +79,15 @@ var jobs = {
       guile: 0.5,
       divinity: 1,
     },
+    unlocked: false,
+    unlock: "Acheive an average max skill level of 10 across all skills",
+    check: function (self) {
+      var total = 0;
+      Object.keys(self.stats.skills).map(function (skillname, i) {
+        total += self.stats.skills[skillname];
+      });
+      return (total / Object.keys(self.stats.skills).length >= 10);
+    },
     perks: ['Constant Learner']
   },
   grifter: {
@@ -105,7 +106,7 @@ var jobs = {
       divinity: 0.5,
     },
     unlocked: false,
-    hint: "The grifter weasels their was into every whispered conversation, side job and scheme in the city. Everyone meets him after spending enough time in the city.",
+    hint: "The grifter weasels their way into every whispered conversation, side job and scheme in the city. Everyone meets him after spending enough time in the city.",
     unlock: "Complete over 200 quests in in the City area.",
     check: function (self) {
       return (self.stats.areas.City.completions > 200);
