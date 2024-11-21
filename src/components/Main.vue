@@ -145,7 +145,7 @@
               <hr>
               <h6>Aptitudes (Total: {{Math.round(jobs[chosenJob].powerLevel)}})</h6>
               <div class="row">
-                <div class="col-6" v-for="(apt, skill, index) in jobs[chosenJob].defaultAptitudes">
+                <div class="col-6" v-for="(apt, skill, index) in jobs[chosenJob].aptitudes">
                   <div>{{skill}} : {{apt}}</div>
                   <div style="height: 5px;" v-bind:style="{width: Math.round((apt / 5) * 100) + '%'}" v-bind:aria-valuenow="Math.round((apt / 5) * 100)" class="progress-bar col-12" role="progressbar" aria-valuemin="0" aria-valuemax="100">
                   </div>

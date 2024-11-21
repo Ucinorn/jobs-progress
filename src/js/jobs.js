@@ -488,10 +488,8 @@ var jobs = {
 // sprinkle the default values in here so we don't have to have them above.
 Object.keys(jobs).map(function (key, index) {
   // assign the current aptitudes to defaults so we have a point of reference in multiplier calculations
-  jobs[key].defaultAptitudes = {};
-  Object.assign(jobs[key].defaultAptitudes, jobs[key].aptitudes);
   jobs[key].multis = {};
-  jobs[key].powerLevel = Object.values(jobs[key].defaultAptitudes).reduce(function (a, b) { return a + b; }, 0);
+  jobs[key].powerLevel = Object.values(jobs[key].aptitudes).reduce(function (a, b) { return a + b; }, 0);
 });
 
 export default jobs

@@ -362,7 +362,7 @@ export default {
           const aptMultiObject = tempmultis.apt[skillname][zonename]
           aptMultiObject.final = calculateFinal(aptMultiObject);
           // then we turn around and apply it to the progress and exp multi
-          const baseApt = self.jobs[self.player.job].defaultAptitudes?.[skillname] || 1
+          const baseApt = self.jobs[self.player.job].aptitudes?.[skillname] || 1
           const aptMulti = aptMultiObject.final * baseApt;
           tempmultis.progress[skillname][zonename]['aptitude'] = aptMulti;
           tempmultis.exp[skillname][zonename]['aptitude'] = aptMulti;

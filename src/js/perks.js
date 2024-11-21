@@ -389,7 +389,7 @@ const perks = {
       if (average >= 15 && self.jobs.goblin.name === "Goblin") {
         self.jobs.goblin.name = "Goblin Chieftan";
         self.jobs.goblin.description = "The sniveling Goblin has survived despite the odds, and has risen to rank of Goblin Chieftan. It leads a small group of families and stunted goblin soldiers, attempting to scrape together a life away from the eyes of do-gooder adventurers looking for a target.";
-        self.jobs.goblin.defaultAptitudes = {
+        self.jobs.goblin.aptitudes = {
           labour: 2,
           combat: 2,
           archery: 2,
@@ -424,7 +424,7 @@ const perks = {
       if (average >= 30 && self.jobs.goblin.name === "Goblin Chieftan") {
         self.jobs.goblin.name = "Goblin King";
         self.jobs.goblin.description = "You are the Goblin King, raised here by decades of blood, sweat and tears. You rule your people with grace, wit and strength, leading them to a glorious invasion of the human lands, at last finding a place for your people to call home.";
-        self.jobs.goblin.defaultAptitudes = {
+        self.jobs.goblin.aptitudes = {
           labour: 0.1,
           combat: 0.1,
           archery: 0.1,
