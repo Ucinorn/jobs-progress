@@ -476,24 +476,27 @@ export default {
       });
     },
     quest: function (zone) {
-      if (this.player.currentZone.finished) {
+      if ( ! zone ) {
+        zone = this.player.currentZone.name;
+      }
+      if (zone.finished) {
         this.completeQuest();
         return;
       }
       // get the total increase from the rate;
-      var total = this.player.currentZone?.rates?.total || 0;
+      var total = zone?.rates?.total || 0;
       // progress must always be at least 1. if not, just return and nothing happens.
       if (total < 1) {
         return
 
       }
-      if ((this.player.currentZone.current + total) >= this.player.currentZone.max) {
-        this.player.currentZone.progress = 100;
-        this.player.currentZone.current = this.player.currentZone.max;
-        this.player.currentZone.finished = true;
+      if (( zone.current + total) >= zone.max) {
+        zone.progress = 100;
+        zone.current = zone.max;
+        zone.finished = true;
       } else {
-        this.player.currentZone.current += total;
-        this.player.currentZone.progress = Math.round((this.player.currentZone.current / this.player.currentZone.max) * 100);
+        zone.current += total;
+        zone.progress = Math.round((zone.current / zone.max) * 100);
       }
     },
     completeQuest: function (zone) {
