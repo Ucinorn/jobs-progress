@@ -439,8 +439,9 @@ export default {
         // loop through zones, setting progress rates for each.
         var total = 0;
         Object.keys(self.zones[zonename].skills).map(function (skill, index) {
-          // calculate progress based on player skill
-          var amount = self.player.skills[skill].level + 1;
+          // calculate progress based on player aptitude plus level
+          const apt = self.jobs[self.player.job].aptitudes?.[skill] || 1;
+          var amount = self.player.skills[skill].level + apt;
           // multiply the result by the total progress multiplier
           let progressMulti = self.getMulti(zonename, skill, 'progress');
           if ( typeof progressMulti != 'undefined') {
@@ -456,18 +457,20 @@ export default {
         self.zones[zonename].rates.total = Number((total).toFixed(2));
       })
       // set the EXP rate of the current zone while we are here
+      // this is also based on aptitude, plus level
       Object.keys(self.player.skills).map(function (key, index) {
         var exprate = 0
         const currentZone = self.player.currentZone;
         const currentZoneSkill = currentZone?.skills?.[key];
+        const apt = self.jobs[self.player.job].aptitudes?.[key] || 1;
         if (currentZoneSkill) {
-          var baseIncrease = currentZoneSkill + 10;
+          var baseIncrease = currentZoneSkill + apt;
           let expMulti = self.getMulti(currentZone.name, key, 'exp');
           let increase = baseIncrease * expMulti;
           self.player.skills[key].rate = increase;
         }
         // add any static boosts AFTER multiplier
-        // TODO maybe split boosts into pre and post multi
+        // TODO maybe split boosts into pre and post multi?
         exprate = + Math.floor(self.finalBoosts.exp);
         self.player.skills[key].rate = exprate;
       });
@@ -481,7 +484,8 @@ export default {
       var total = this.player.currentZone?.rates?.total || 0;
       // progress must always be at least 1. if not, just return and nothing happens.
       if (total < 1) {
-        total = 0;
+        return
+
       }
       if ((this.player.currentZone.current + total) >= this.player.currentZone.max) {
         this.player.currentZone.progress = 100;
