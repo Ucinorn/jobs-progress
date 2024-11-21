@@ -16,8 +16,6 @@ export default {
     this.load();
     // set the rates and display numbers for the game
     this.calculateRates();
-    // start the game loop
-    this.startGame();
   },
   watch: {
     'player': (p) => { console.log('self.player changed', p) },
@@ -46,6 +44,7 @@ export default {
       */
     },
     'constants.loopspeed': function () {
+      console.log('loop speed changed, restarting loop');
       this.endLoop();
       this.startLoop();
     },
@@ -56,7 +55,7 @@ export default {
   },
   computed: {
     isPlaying() {
-      return this.player.currentZone?.name;
+      return this.player?.job;
     }
   },
   methods: {
@@ -223,6 +222,10 @@ export default {
     },
     calculateMultis: function () {
 
+      if (!this.player.job) {
+        console.log('no job found, skipping multi calculation');
+        return;
+      }
       // produce an object of multipliers, keyed by the 
       /*
       { 
@@ -246,7 +249,7 @@ export default {
       
       const self = this;
       const { zones, player, player: { skills }, multis } = self
-      console.log('calculating multis' );
+      console.log('calculating multis', this.player.job);
 
            // check first if any multis have expired (ie. are temporary)
       Object.keys(self.multis).map(function (key, i) {
@@ -573,8 +576,8 @@ export default {
       }
     },
     startGame: function () {
+      console.log('starting game');
       this.startup = false;
-      this.startLoop();
       this.$forceUpdate();
     },
     startLoop: function () {
@@ -623,7 +626,7 @@ export default {
         console.log('player data loaded from localstorage');
       } else {
         this.setDefaultPlayer()
-        console.log('new player data loaded');
+        console.error('unable to LOAD: setDefaultPlayer');
       }
 
       if (localStorage.getItem('jobs_stats_save') != null) {
@@ -670,39 +673,38 @@ export default {
       console.log('resetting to job:', job)
       this.prestige.confirm = '';
       this.resetStats();
-      if (typeof job == 'undefined') {
-        job = this.player.job;
-        if (!(job in this.jobs)) {
-          console.log('Job not found, could not reset to it: ' + job)
-          this.player.job = 'peasant';
-        }
-      }
       this.endLoop();
       localStorage.removeItem('player_save');
       this.setDefaultPlayer();
       this.multis = {}
       // sprinkle stuff into the new player data
-      if ( job in this.jobs) {
+      if ( job in this.jobs ) {
         console.log('setting job to: ' + job);
         this.player.job = job;
         this.player.currentJob = this.jobs[this.player.job];
         // reset perks and build them again from scratch
         this.player.perks = {};
-        this.player.currentJob.perks.forEach(function (perk) {
-          console.log('setting perk from job');
-          self.setPerk(perk);
+        this.player.currentJob.perks.forEach((perk) => {
+          console.log('setting perk from job', perk );
+          this.setPerk(perk);
         });
+        for (let skillname in this.jobs[this.player.job].skills) {
+          this.player.skills[skillname] = {
+            level: 0,
+            exp: 0,
+            next: 10,
+          }
+        }
         // loop through bought upgrades to add them to your perks list
         // relies on perk upgrades being generated entirely by code
         this.applyBought();
         this.checkPerks();
       } else {
-        console.log('could not find job: ' + this.player.job)
-        this.setDefaultPlayer()
+        console.log(`could not find job: ${job} .Setting to default`);
+        return
       }
 
       this.player.zone = 'Inn';
-      Object.assign(this.player.skills, newData.skills);
       this.view = 'world';
       this.stats.totalCharacters++;
       this.resetStats();
@@ -830,15 +832,29 @@ import SelectJob from './components/SelectJob.vue'
       </div>
     </div>
     <div v-else>
-
       <div class="row" v-if="isPlaying">
         <Sidebar />
-        <Main />
+        <!-- <Main /> -->
         <Footer />
       </div>
       <div v-else>
         <SelectJob @selectJob="( job , $event ) => reincarnate(job)"/>
       </div>
+
+      <div id="debug" style="font-size: 10px;" v-if="debug">
+      <hr>
+      <button @click="reset()">Reset</button>
+      <button @click="player.level++">LVL+</button>
+      <button @click="player.level--">LVL-</button>
+      <button @click="completeQuest()">COMPLETE</button>
+      <button @click="logData()">LogData()</button>
+      <button @click="message('testing', 'general')">Test message</button>
+      <hr>messages: {{messages}}
+      <hr>multis: {{multis}}
+      <hr>player: {{player}}
+      <hr>perks: {{perks}}
+      <hr>bought: {{bought}}
+    </div>
     </div>
   </div>
 </template>
