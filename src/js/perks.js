@@ -134,11 +134,7 @@ const perks = {
     description: "Gain additional 100% more EXP in dungeon zones.",
     cost: 10,
     check: function (self) {
-      if (self.player.currentZone.type == 'dungeon') {
-        self.multis['Dungeon Diver'] = { type: 'exp', skill: 'all', val: 1 };
-      } else {
-        delete self.multis['Dungeon Diver'];
-      }
+      self.multis['Dungeon Diver'] = { type: 'exp', skill: 'all', val: 1, locale: 'dungeon' };
     }
   },
   'Blaze of Glory': {
@@ -157,22 +153,17 @@ const perks = {
     description: "Your skills truly shine in the crowded alleyways of the city. Your combat, guile and scouting aptitude is increase in urban zones.",
     cost: 10,
     check: function (self) {
-      if (self.player.currentZone.type == 'urban') {
-        self.multis['Lost in the Crowd guile'] = { type: 'apt', skill: 'guile', val: 1 };
-        self.multis['Lost in the Crowd combat'] = { type: 'apt', skill: 'combat', val: 0.5 };
-        self.multis['Lost in the Crowd scouting'] = { type: 'apt', skill: 'scouting', val: 1 };
-      } else {
-        delete self.multis['Lost in the Crowd guile'];
-        delete self.multis['Lost in the Crowd combat'];
-        delete self.multis['Lost in the Crowd scouting'];
-      }
+      const skills = ['guile', 'combat', 'scouting']
+      skills.forEach(function (skill) {
+        self.multis['Lost in the Crowd ' + skill] = { type: 'apt', skill: skill, val: 1, locale: 'urban' };
+      });
     }
   },
   'Wanted': {
     description: "Your renown grows with every heist. Your EXP multiplier grows with every level, with every level up there is a chance to be caught and tried, written to the Hall of Heroes as an criminal mastermind",
     onQuestComplete: function (self) {
       var chance = Number((self.player.level * 0.05).toFixed(2))
-      self.multis.Wanted = { type: 'exp', skill: 'all', val: chance };
+      self.multis['Wanted'] = { type: 'exp', skill: 'all', val: chance };
       if (self.player.currentZone.type == 'urban' && self.prestige.next > 0) {
         if ((Math.random() * 100) < chance) {
           self.message('Caught!', 'modal', true)
@@ -182,40 +173,17 @@ const perks = {
     }
   },
   'Expert Marksman': {
-    description: "Zones that include an Archery component progress four times faster.",
+    description: "Zones that include an Archery component progress three times faster.",
     cost: 30,
     check: function (self) {
-      var hasArchery = false;
-      Object.keys(self.player.currentZone.skills).map(function (skillname, i) {
-        if (skillname == 'archery') {
-          hasArchery = true;
-        }
-      });
-      if (hasArchery) {
-        self.multis['Expert Marksman'] = { type: 'progress', skill: 'all', val: 3 };
-      } else {
-        delete self.multis['Expert Marksman'];
-      }
+      self.multis['Expert Marksman'] = { type: 'progress', skill: 'all', val: 3 , zone_with_skill: 'archery'};
     }
   },
   'Effective Scout': {
     description: "Your aptitude for skills increases by 50% in zones with a scouting component.",
     cost: 10,
     check: function (self) {
-      var hasScouting = false;
-      Object.keys(self.player.currentZone.skills).map(function (skillname, i) {
-        if (skillname == 'scouting') {
-          hasScouting = true;
-        }
-      });
-      Object.keys(self.player.currentZone.skills).map(function (skillname, i) {
-        var multiname = 'Scouting: ' + skillname;
-        if (skillname != 'scouting' && hasScouting) {
-          self.multis[multiname] = { type: 'apt', skill: skillname, val: 0.5 };
-        } else {
-          delete self.multis[multiname];
-        }
-      });
+      self.multis['Effective Scout'] = { type: 'apt', skill: skillname, val: 0.5, zone_with_skill: 'scouting' };
     }
   },
   'Pacifist': {
@@ -298,6 +266,7 @@ const perks = {
     description: "Greatly increase all your aptitudes in zones that include a guile component",
     cost: 25,
     check: function (self) {
+      self.multis.Swashbuckler = { type: 'apt', skill: 'all', val: 3, zone_with_skill: 'guile' };
       var hasGuile = false;
       Object.keys(self.player.currentZone.skills).map(function (skillname, i) {
         if (skillname == 'guile') {
@@ -305,22 +274,17 @@ const perks = {
         }
       });
       if (hasGuile) {
-        self.multis.Swashbuckler = { type: 'apt', skill: 'all', val: 3 };
+        
       } else {
         delete self.multis.Swashbuckler;
       }
     }
   },
   'Pillager': {
-    description: "You have to raid and pillage, and don't fare well outside of human settlements. Your progress and exp gain in non-urban zones is reduced.",
+    description: "You have to raid and pillage, and don't fare well outside of human settlements. Your progress and exp gain in non-urban zones is halved.",
     check: function (self) {
-      if (self.currentZone.type != 'urban') {
-        self.multis['Pillager Progress'] = { type: 'progress', skill: 'all', val: -1 };
-        self.multis['Pillager EXP'] = { type: 'exp', skill: 'all', val: -1 };
-      } else {
-        delete self.multis.multis['Pillager Progress'];
-        delete self.multis.multis['Pillager EXP'];
-      }
+      self.multis['Pillager Progress'] = { type: 'progress', skill: 'all', val: 0.5, locale: 'urban'};
+      self.multis['Pillager EXP'] = { type: 'exp', skill: 'all', val: 0.5, locale: 'urban' };
     }
   },
   'Infernal Blood': {
@@ -347,50 +311,32 @@ const perks = {
     }
   },
   'Bear Strength': {
-    description: "Gain slightly increased aptitude for combat skills in dungeon zones",
+    description: "Gain double aptitude for combat skills in dungeon zones",
     cost: 5,
     check: function (self) {
       var skills = ['combat', 'archery', 'blackMagic']
-      if (self.player.currentZone.type == 'dungeon') {
-        skills.forEach(function (skill) {
-          self.multis['Bear Strength: ' + skill] = { type: 'apt', skill: skill, val: 0.5 };
-        })
-      } else {
-        skills.forEach(function (skill) {
-          delete self.multis['Bear Strength: ' + skill];
-        })
+      for ( skill in skills) {
+        self.multis['Bear Strength: ' + skill] = { type: 'apt', skill: skill, val: 2, locale: 'dungeon' };
       }
     }
   },
   'Hawk Vision': {
-    description: "Gain slightly increased aptitude for survival skills in wilderness zones",
+    description: "Gain double aptitude for survival skills in wilderness zones",
     cost: 5,
     check: function (self) {
       var skills = ['labour', 'scouting', 'whiteMagic', 'herbalism']
-      if (self.player.currentZone.type == 'dungeon') {
-        skills.forEach(function (skill) {
-          self.multis['Hawk Vision: ' + skill] = { type: 'apt', skill: skill, val: 0.5 };
-        })
-      } else {
-        skills.forEach(function (skill) {
-          delete self.multis['Hawk Vision: ' + skill];
-        })
+      for ( skill in skills) {
+        self.multis['Hawk Vision: ' + skill] = { type: 'apt', skill: skill, val: 2, locale: 'wilderness' };
       }
     }
   },
   'Owl Wisdom': {
-    description: "Gain slightly increased aptitude for social skills in urban zones",
+    description: "Gain double aptitude for social skills in urban zones",
     cost: 5,
     check: function (self) {
       var skills = ['diplomacy', 'guile', 'divinity']
-      if (self.player.currentZone.type == 'dungeon') {
-        skills.forEach(function (skill) {
-          self.multis['Owl Wisdom: ' + skill] = { type: 'apt', skill: skill, val: 0.5 };
-        })
-      } else {
-        skills.forEach(function (skill) {
-          delete self.multis['Owl Wisdom: ' + skill];
-        })
+      for ( skill in skills) {
+        self.multis['Owl Wisdom: ' + skill] = { type: 'apt', skill: skill, val: 2, locale: 'urban' };
       }
     }
   },

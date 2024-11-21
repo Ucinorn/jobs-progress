@@ -298,7 +298,8 @@ export default {
           Object.keys(skills).map(function (skillname, s) {
             const skill = skills[skillname];
 
-            // if a zone or area is explicitly set, validate for it here
+            // if attributes are explicitly set ont he multi, validate for them here
+
             if ('zone' in multi && multi.zone != zonename) {
               return;
             }
@@ -310,6 +311,21 @@ export default {
             }
             if ('skill' in multi && multi.skill != skillname && multi.skill != 'all') {
               return;
+            }
+
+            // this allows multis to apply ONLY if a zone has a particualr skill
+            if ( 'zone_with_skill' in multi ) {
+              // add support for arrays here, in case we 
+              // want to look for multiple zones
+              let zone_with_skill = multi.zone_with_skill;
+              if ( ! Array.isArray(zone_with_skill) ) {
+                zone_with_skill = [zone_with_skill];
+              }
+              for ( const z of zone_with_skill ) {
+                if ( ! multi.zone_with_skill.includes(z) ) {
+                  return;
+                }
+              }
             }
             // this is a direct reference to the temp multi object
             // its what lets us modify the top level multi values

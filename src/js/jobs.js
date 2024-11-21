@@ -117,16 +117,16 @@ var jobs = {
     name: "Fighter",
     description: "Whether they fight for king, country or gold, there will always be those who think violence is the first and only solution to all of life's problems. ",
     aptitudes: {
-      labour: 2,
-      combat: 0.5,
-      archery: 1,
-      scouting: 1,
-      whiteMagic: 3,
-      blackMagic: 2,
-      herbalism: 4,
+      labour: 10,
+      combat: 25,
+      archery: 15,
+      scouting: 10,
+      whiteMagic: 1,
+      blackMagic: 1,
+      herbalism: 1,
       diplomacy: 1,
-      guile: 2,
-      divinity: 0.5,
+      guile: 1,
+      divinity: 1,
     },
     unlocked: false,
     check: function (self) {
@@ -144,16 +144,16 @@ var jobs = {
     name: "Witch",
     description: "A healer, herbalist and keeper of ancient magic, feared by men and revered by women. Witches answer to no-one and can be both a scourge and saviour to nearby villages.",
     aptitudes: {
-      labour: 2,
-      combat: 0.5,
-      archery: 1,
-      scouting: 1,
-      whiteMagic: 3,
-      blackMagic: 2,
-      herbalism: 4,
-      diplomacy: 1,
-      guile: 2,
-      divinity: 0.5,
+      labour: 5,
+      combat: 2,
+      archery: 10,
+      scouting: 5,
+      whiteMagic: 15,
+      blackMagic: 10,
+      herbalism: 25,
+      diplomacy: 5,
+      guile: 20,
+      divinity: 1,
     },
     unlocked: false,
     check: function (self) {
@@ -171,16 +171,16 @@ var jobs = {
     name: "Druid",
     description: "Druids have their reputation for defending nature, but in truth they view all beings as equals. They ensure no plant or animal takes more than their share of nature's bountry, including mankind.",
     aptitudes: {
-      labour: 1.5,
-      combat: 2,
-      archery: 2,
-      scouting: 1,
-      whiteMagic: 2,
-      blackMagic: 2,
-      herbalism: 2,
-      diplomacy: 1,
-      guile: 1,
-      divinity: 1,
+      labour: 7,
+      combat: 7,
+      archery: 7,
+      scouting: 7,
+      whiteMagic: 7,
+      blackMagic: 7,
+      herbalism: 7,
+      diplomacy: 7,
+      guile: 7,
+      divinity: 7,
     },
     unlocked: false,
     check: function (self) {
@@ -193,7 +193,7 @@ var jobs = {
           if (ret.skills[key] < lowest) { lowest = ret.skills[key] }
         });
         if ((highest - lowest) < 5) {
-          state = true;
+          return true;
         }
       });
       return state;
@@ -202,49 +202,20 @@ var jobs = {
     unlock: "Retire a character with no skills more than five levels difference from another.",
     perks: ['Bear Strength', 'Hawk Vision', 'Owl Wisdom']
   },
-  goblin: {
-    name: "Goblin",
-    description: "A feral race warped by ancient magic and centuries of inbreeding, Goblins lead poor, short lives that often end at the hands of questing adventurers. Every once in a while, though, a goblin lives long enough to fulfil their true potential...",
-    aptitudes: {
-      labour: 0.5,
-      combat: 0.5,
-      archery: 0.5,
-      scouting: 0.5,
-      whiteMagic: 0.5,
-      blackMagic: 0.5,
-      herbalism: 0.5,
-      diplomacy: 0.5,
-      guile: 0.5,
-      divinity: 0.5,
-    },
-    perks: ['Despite a cursed life...', 'Some survive the odds...'],
-    unlocked: false,
-    check: function (self) {
-      var total = 0;
-      Object.keys(self.zones).map(function (zonename, i) {
-        if (self.zones.type == 'dungeon' && zonename in self.stats.zones) {
-          total += self.stats.zones[zonename].completions;
-        }
-      });
-      return (total > 300);
-    },
-    hint: "Goblins avoid  humans at all costs, gravitating towards dark caves and  abandoned castles in an effort to scrape together an existence. Unfortunately these locations also draw adventurers and do-gooders looking for loot and amusement, justifying their genocide in the name of 'clearing dungeons'.",
-    unlock: "Complete over 300 quests in dungeon zones.",
-  },
   adventurer: {
     name: "Adventurer",
     description: "An experienced wanderer and jack-of-all-trades seeking fame, fortune and glory. Will take any job for the right price and the chance to be enscribed in history's pages.",
     aptitudes: {
-      labour: 1,
-      combat: 2,
-      archery: 1.5,
-      scouting: 1,
-      whiteMagic: 1.5,
-      blackMagic: 1.5,
-      herbalism: 1.5,
-      diplomacy: 1.5,
-      guile: 1.5,
-      divinity: 1,
+      labour: 5,
+      combat: 10,
+      archery: 7,
+      scouting: 5,
+      whiteMagic: 5,
+      blackMagic: 10,
+      herbalism: 7,
+      diplomacy: 8,
+      guile: 10,
+      divinity: 5,
     },
     unlocked: false,
     check: function (self) {
@@ -264,16 +235,16 @@ var jobs = {
     name: "Thief",
     description: "People steal for many reasons; wealth, fame, love, or sometimes just to feed their family. Most lose a hand or eye in short order, but for some talented individuals, nothing is truly nailed down.",
     aptitudes: {
-      labour: 0.5,
-      combat: 1.5,
-      archery: 2,
-      scouting: 3,
-      whiteMagic: 1,
-      blackMagic: 1,
-      herbalism: 1.5,
-      diplomacy: 2,
-      guile: 2,
-      divinity: 1,
+      labour: 1,
+      combat: 7,
+      archery: 15,
+      scouting: 20,
+      whiteMagic: 7,
+      blackMagic: 3,
+      herbalism: 10,
+      diplomacy: 10,
+      guile: 20,
+      divinity: 5,
     },
     unlocked: false,
     hint: "The theif must be competent in all aspects, patiently watching for opportubnity, slipping unseen through the shadows, and prepared to fight from near or far if needed.",
@@ -295,16 +266,16 @@ var jobs = {
     name: "Pirate",
     description: "An opportunistic cutthroat that loves mothing more than drinking, fighting and gambling, ideally all at once.",
     aptitudes: {
-      labour: 2,
-      combat: 2,
-      archery: 0.5,
-      scouting: 2,
-      whiteMagic: 1,
-      blackMagic: 2,
-      herbalism: 1,
-      diplomacy: 2,
-      guile: 4,
-      divinity: 0.5,
+      labour: 10,
+      combat: 10,
+      archery: 3,
+      scouting: 10,
+      whiteMagic: 5,
+      blackMagic: 5,
+      herbalism: 5,
+      diplomacy: 10,
+      guile: 25,
+      divinity: 3,
     },
     unlocked: false,
     check: function (self) {
@@ -466,7 +437,7 @@ var jobs = {
       archery: 1,
       scouting: 0.5,
       whiteMagic: 5,
-      blackMagic: 0.1,
+      blackMagic: 0,
       herbalism: 3,
       diplomacy: 1.5,
       guile: 1.5,
@@ -490,16 +461,16 @@ var jobs = {
     name: "Paladin",
     description: "The paladin walks openly in heavy armour, healing the sick, defending the weak and fighting evil wherever it lies. They dispense justice to all men, from the lowest peasant to lords and kings.",
     aptitudes: {
-      labour: 1,
-      combat: 1,
-      archery: 1,
-      scouting: 0.5,
-      whiteMagic: 3.5,
-      blackMagic: 0.5,
-      herbalism: 1,
-      diplomacy: 3,
+      labour: 5,
+      combat: 10,
+      archery: 5,
+      scouting: 2,
+      whiteMagic: 15,
+      blackMagic: 2,
+      herbalism: 5,
+      diplomacy: 15,
       guile: 0,
-      divinity: 4,
+      divinity: 25,
     },
     unlocked: false,
     check: function (self) {
@@ -524,3 +495,40 @@ Object.keys(jobs).map(function (key, index) {
 });
 
 export default jobs
+
+
+
+
+/* 
+
+  goblin: {
+    name: "Goblin",
+    description: "A feral race warped by ancient magic and centuries of inbreeding, Goblins lead poor, short lives that often end at the hands of questing adventurers. Every once in a while, though, a goblin lives long enough to fulfil their true potential...",
+    aptitudes: {
+      labour: 0.5,
+      combat: 0.5,
+      archery: 0.5,
+      scouting: 0.5,
+      whiteMagic: 0.5,
+      blackMagic: 0.5,
+      herbalism: 0.5,
+      diplomacy: 0.5,
+      guile: 0.5,
+      divinity: 0.5,
+    },
+    perks: ['Despite a cursed life...', 'Some survive the odds...'],
+    unlocked: false,
+    check: function (self) {
+      var total = 0;
+      Object.keys(self.zones).map(function (zonename, i) {
+        if (self.zones.type == 'dungeon' && zonename in self.stats.zones) {
+          total += self.stats.zones[zonename].completions;
+        }
+      });
+      return (total > 300);
+    },
+    hint: "Goblins avoid  humans at all costs, gravitating towards dark caves and  abandoned castles in an effort to scrape together an existence. Unfortunately these locations also draw adventurers and do-gooders looking for loot and amusement, justifying their genocide in the name of 'clearing dungeons'.",
+    unlock: "Complete over 300 quests in dungeon zones.",
+  },
+
+*/
