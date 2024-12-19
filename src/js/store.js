@@ -1,8 +1,8 @@
 
 
 import jobs from './jobs'
-import upgrades from './jobs'
-import zones from './zones'
+import upgrades from './upgrades'
+import { zones, roads } from './zones'
 import perks from './perks'
 
 const base = {
@@ -36,18 +36,18 @@ const base = {
     effects: {},
     lastEffects: {},
   },
-
+  areaMovement: [], // this is the sequence of areas the player has travelled through
   // pulled from elsewhere
   jobs: jobs,
   zones: zones,
   perks: perks,
   upgrades: upgrades,
-
+  roads: roads,
   areas: [],
   bought: [],
   stats: {},
   icons: {
-    labour: "industry",
+    labour: "bi-wrench-adjustable-circle-fill",
     combat: 'shield',
     archery: 'bullseye',
     scouting: 'binoculars',

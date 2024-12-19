@@ -19,8 +19,8 @@ export default {
   },
   watch: {
     'player': (p) => { console.log('self.player changed', p) },
-    'player.zone': function () {
-      console.log('setting zone via watcher');
+    'player.zone': function (zone) {
+      console.log('setting zone via watcher', zone, this.player.zone);
       if (this.player.zone in this.zones) {
         this.player.currentZone = this.zones[this.player.zone];
         this.player.area = this.zones[this.player.zone].area;
@@ -51,6 +51,11 @@ export default {
     'player.level': function () {
       this.checkPerks();
       this.calculatePrestige();
+    },
+    'multis': function () {
+      console.log('multis changed, recalculating');
+      this.calculateMultis();
+      this.checkPerks();
     }
   },
   computed: {
@@ -216,7 +221,6 @@ export default {
           self.perks[perk].check(self);
         }
       });
-      this.calculateMultis();
       this.checkUnlocks();
       this.$forceUpdate();
     },
@@ -431,7 +435,7 @@ export default {
     },
     calculateRates: function () {
       var self = this;
-      if (!self?.player?.currentZone) {
+      if (!self?.player?.currentZone || !self.player.job) {
         console.log('No current zone found, skipping rate calculation');
         return;
       }
@@ -510,7 +514,6 @@ export default {
       this.player.currentZone.current = 0;
       // gain EXP for each skill in the zone.
       var self = this;
-      self.calculateMultis();
       Object.keys(this.player.currentZone.skills).map(function (key, index) {
         if (key in self.player.currentJob.aptitudes) {
           if (key in self.player.skills) {
@@ -649,7 +652,7 @@ export default {
         console.log('player data loaded from localstorage');
       } else {
         this.setDefaultPlayer()
-        console.error('unable to LOAD: setDefaultPlayer');
+        console.log('unable to LOAD: setDefaultPlayer');
       }
 
       if (localStorage.getItem('jobs_stats_save') != null) {
@@ -727,7 +730,7 @@ export default {
         return
       }
 
-      this.player.zone = 'Inn';
+      this.player.zone = '';
       this.view = 'world';
       this.stats.totalCharacters++;
       this.resetStats();
@@ -833,7 +836,7 @@ export default {
 <script setup>
 
 import Sidebar from './components/Sidebar.vue'
-import Main from './components/Main.vue'
+import Areas from './components/Areas.vue'
 import Footer from './components/Footer.vue'
 import SelectJob from './components/SelectJob.vue'
 </script>
@@ -855,11 +858,13 @@ import SelectJob from './components/SelectJob.vue'
       </div>
     </div>
     <div v-else>
-      <div class="row" v-if="isPlaying">
-        <Sidebar />
-        <!-- <Main /> -->
+      <template v-if="isPlaying">
+        <div class="d-flex gap-3" id="main">
+          <Sidebar />
+          <Areas />
+        </div>
         <Footer />
-      </div>
+      </template>
       <div v-else>
         <SelectJob @selectJob="( job , $event ) => reincarnate(job)"/>
       </div>

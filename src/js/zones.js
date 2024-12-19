@@ -482,7 +482,19 @@ Object.keys(zones).map(function (key, index) {
   zones[key].multis = {};
   // container for rate of progress, used in calculatiosn and shown on frontend
   zones[key].rates = {};
+  // add the object key as a duplicate name to the zones object
+  zones[key].name = key;
+
 });
 
+// add the roads
+// future upgrades might unlock new roads
+const roads = [];
+roads.push(['Coast', 'Steppes']);
+roads.push(['Steppes', 'Great Plains']);
+roads.push(['Great Plains', 'City']);
+roads.push(['City', 'Mountains']);
+roads.push(['Mountains', 'Desert']);
+roads.push(['Desert', 'Wildlands']);
 
-export default zones;
+export { zones, roads };

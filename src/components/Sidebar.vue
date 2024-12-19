@@ -10,7 +10,7 @@ const perks = toRef(store, 'perks')
 </script>
 
 <template>
-         <div class="col" id="sidebar">
+      <div class="col" id="sidebar">
           <VMenu placement="right-end">
             <div class="d-flex justify-content-between mb-4">
                 <strong>{{jobs[player.job].name}}</strong>

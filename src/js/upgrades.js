@@ -1,3 +1,5 @@
+import perks from './perks'
+
 var upgrades = {
   'Follow the Mirage': {
     description: "Unlock the Mirage Palace zone.",
@@ -24,7 +26,7 @@ var upgrades = {
 // generate unlocks for all perks with a set cost.
 Object.keys(perks).map(function (key, index) {
   if ('cost' in perks[key] && perks[key].cost > 0) {
-    baseUpgrades[key] = {
+    upgrades[key] = {
       description: "Permanently apply the " + key + " perk to your character",
       type: "perk",
       persistent: false,
